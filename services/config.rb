@@ -47,7 +47,7 @@ const JSON = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const AUDIT_NAME = 'ec2-samples';
-const IS_KILL_SCRIPTS_SHOW = false;
+const IS_KILL_SCRIPTS_SHOW = true;
 const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
 const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
 
