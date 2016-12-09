@@ -51,7 +51,7 @@ end
 
 # Send ec2-samples for email
 coreo_uni_util_notify "advise-ec2-samples-to-tag-values" do
-  action :${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_NOTIF}
+  action :notify
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
 end
 
@@ -78,7 +78,7 @@ callback(HTMLKillScripts)
 end
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action :${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_NOTIF}
+  action :notify
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
