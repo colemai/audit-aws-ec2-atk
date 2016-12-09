@@ -22,7 +22,7 @@ end
 coreo_aws_advisor_ec2 "advise-ec2-samples" do
   alerts ["ec2-get-all-instances-older-than"]
   action :advise
-  regions ${AUDIT_AWS_EC2_SAMPLES_REGIONS}
+  regions ${AUDIT_AWS_EC2_ATK_REGIONS}
 end
 
 # this is doing the owner tag parsing only - it needs to also include the kill tag logic (and/or)
@@ -43,7 +43,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
   function <<-EOH
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditCloudtrail = new CloudCoreoJSRunner(json_input, true, "${AUDIT_AWS_EC2_SAMPLES_ALERT_TO_KILL_RECIPIENT}", "${AUDIT_AWS_EC2_SAMPLES_OWNER_TAG}", 'ec2-samples');
+const AuditCloudtrail = new CloudCoreoJSRunner(json_input, true, "${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}", "${AUDIT_AWS_EC2_ATK_OWNER_TAG}", 'ec2-samples');
 const notifiers = AuditCloudtrail.getNotifiers();
 callback(notifiers);
   EOH
@@ -51,7 +51,7 @@ end
 
 # Send ec2-samples for email
 coreo_uni_util_notify "advise-ec2-samples-to-tag-values" do
-  action :${AUDIT_AWS_EC2_SAMPLES_ALERT_TO_KILL_NOTIF}
+  action :${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_NOTIF}
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
 end
 
@@ -71,20 +71,20 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
   function <<-EOH
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditCloudtrail = new CloudCoreoJSRunner(json_input, true, "${AUDIT_AWS_EC2_SAMPLES_ALERT_TO_KILL_RECIPIENT}", "${AUDIT_AWS_EC2_SAMPLES_OWNER_TAG}", 'ec2-samples');
+const AuditCloudtrail = new CloudCoreoJSRunner(json_input, true, "${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}", "${AUDIT_AWS_EC2_ATK_OWNER_TAG}", 'ec2-samples');
 const HTMLKillScripts = AuditCloudtrail.getHTMLKillScripts();
 callback(HTMLKillScripts)
   EOH
 end
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action :${AUDIT_AWS_EC2_SAMPLES_ALERT_TO_KILL_NOTIF}
+  action :${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_NOTIF}
   type 'email'
-  allow_empty ${AUDIT_AWS_EC2_SAMPLES_ALLOW_EMPTY}
-  send_on "${AUDIT_AWS_EC2_SAMPLES_SEND_ON}"
+  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
+  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
   payload 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.return'
   payload_type "html"
   endpoint ({
-      :to => '${AUDIT_AWS_EC2_SAMPLES_ALERT_TO_KILL_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
+      :to => '${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
   })
 end
