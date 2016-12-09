@@ -68,5 +68,5 @@ This repo is designed to work with CloudCoreo.
 
 
 ## Icon
-
+![icon](https://raw.githubusercontent.com/CloudCoreo/audit-aws-ec2-atk/master/images/icon.png "icon")
 
