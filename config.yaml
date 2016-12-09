@@ -49,3 +49,8 @@ variables:
       required: false
       type: string
       default: "NOT_A_TAG"
+  AUDIT_AWS_EC2_ATK_FULL_JSON_REPORT:
+      description: ""
+      required: true
+      type: string
+      default: "nothing"
