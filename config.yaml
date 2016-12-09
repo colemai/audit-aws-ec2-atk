@@ -18,7 +18,7 @@ variables:
     description: '"or" or "and"'
     required: true
     type: string
-    default: '"and"'
+    default: 'and'
   AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_ADVISE:
     description: ""
     required: true
