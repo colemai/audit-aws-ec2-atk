@@ -19,19 +19,9 @@ variables:
     required: true
     type: string
     default: 'and'
-  AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_ADVISE:
+  AUDIT_AWS_EC2_ATK_RECIPIENT:
     description: ""
     required: true
-    type: string
-    default: "nothing"
-  AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_NOTIF:
-    description: ""
-    required: true
-    type: string
-    default: "nothing"
-  AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT:
-    description: ""
-    required: false
     type: string
     default:
   AUDIT_AWS_EC2_ATK_REGIONS:
@@ -49,8 +39,3 @@ variables:
       required: false
       type: string
       default: "NOT_A_TAG"
-  AUDIT_AWS_EC2_ATK_FULL_JSON_REPORT:
-      description: ""
-      required: true
-      type: string
-      default: "nothing"
