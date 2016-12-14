@@ -37,9 +37,6 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
-                "number_of_checks":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_checks",
-                "number_of_violations":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations",
-                "number_violations_ignored":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_ignored_violations",
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
   function <<-EOH
   
@@ -47,17 +44,17 @@ const JSON = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const AUDIT_NAME = 'ec2-samples';
-const IS_KILL_SCRIPTS_SHOW = true;
+const ARE_KILL_SCRIPTS_SHOWN = true;
 const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
 const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
 
 const VARIABLES = {
-    'NO_OWNER_EMAIL': NO_OWNER_EMAIL,
-    'OWNER_TAG': OWNER_TAG,
-    'AUDIT_NAME': AUDIT_NAME,
-    'IS_KILL_SCRIPTS_SHOW': IS_KILL_SCRIPTS_SHOW,
-    'EC2_LOGIC': EC2_LOGIC,
-    'EXPECTED_TAGS': EXPECTED_TAGS
+    NO_OWNER_EMAIL,
+    OWNER_TAG,
+    AUDIT_NAME,
+    ARE_KILL_SCRIPTS_SHOWN,
+    EC2_LOGIC,
+    EXPECTED_TAGS
 };
 
 
