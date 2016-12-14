@@ -128,7 +128,7 @@ end
 
 
 coreo_uni_util_notify "advise-ec2-samples-2-json" do
-  action :nothing
+  action :notify
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on 'always'
