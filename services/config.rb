@@ -190,7 +190,7 @@ const WHAT_NEED_TO_SHOWN = {
     },
     AMI: {
         headerName: 'AMI',
-        isShown: false,
+        isShown: true,
     },
     KILL_SCRIPTS: {
         headerName: 'Kill Cmd',
