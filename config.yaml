@@ -21,7 +21,7 @@ variables:
     default: 'and'
   AUDIT_AWS_EC2_ATK_RECIPIENT:
     description: ""
-    required: true
+    required: false
     type: string
     default:
   AUDIT_AWS_EC2_ATK_RECIPIENT_2:
