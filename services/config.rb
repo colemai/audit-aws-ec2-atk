@@ -99,7 +99,7 @@ coreo_uni_util_notify "advise-atk-rollup" do
 composite name: PLAN::stack_name
 plan name: PLAN::name
 number_of_checks: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_checks
-number_of_violations: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations
+number_of_instances: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations
 number_violations_ignored: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_ignored_violations
 
 rollup report:
