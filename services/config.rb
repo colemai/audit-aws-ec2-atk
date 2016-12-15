@@ -90,7 +90,7 @@ coreo_uni_util_notify "advise-ec2-samples-to-tag-values" do
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
 end
 
-coreo_uni_util_notify "advise-elb-rollup" do
+coreo_uni_util_notify "advise-atk-rollup" do
   action :${AUDIT_AWS_EC2_ATK_ROLLUP_REPORT}
   type 'email'
   allow_empty true
@@ -107,11 +107,11 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   '
   payload_type 'text'
   endpoint ({
-      :to => '${AUDIT_AWS_ELB_ALERT_RECIPIENT_2}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
+      :to => '${AUDIT_AWS_ATK_ALERT_RECIPIENT_2}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
   })
 end
 =begin
-  AWS ELB END
+  AWS ATK END
 =end
 
 
@@ -146,7 +146,7 @@ const VARIABLES = {
 
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON, V+ARIABLES);
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 callback(HTMLKillScripts)
   EOH
