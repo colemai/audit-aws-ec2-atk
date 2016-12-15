@@ -146,7 +146,7 @@ const VARIABLES = {
 
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON, V+ARIABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 callback(HTMLKillScripts)
   EOH
