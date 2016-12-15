@@ -33,7 +33,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.1.9"
+                   :version => "1.2.0"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -48,6 +48,33 @@ const AUDIT_NAME = 'ec2-samples';
 const ARE_KILL_SCRIPTS_SHOWN = true;
 const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
 const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
+const WHAT_NEED_TO_SHOWN = {
+    OBJECT_ID: {
+        headerName: 'AWS Object ID',
+        isShown: true,
+    },
+    REGION: {
+        headerName: 'Region',
+        isShown: true,
+    },
+    AWS_CONSOLE: {
+        headerName: 'AWS Console',
+        isShown: true,
+    },
+    TAGS: {
+        headerName: 'Tags',
+        isShown: true,
+    },
+    AMI: {
+        headerName: 'AMI',
+        isShown: false,
+    },
+    KILL_SCRIPTS: {
+        headerName: 'Kill Cmd',
+        isShown: false,
+    }
+};
+
 
 const VARIABLES = {
     NO_OWNER_EMAIL,
@@ -55,8 +82,10 @@ const VARIABLES = {
     AUDIT_NAME,
     ARE_KILL_SCRIPTS_SHOWN,
     EC2_LOGIC,
-    EXPECTED_TAGS
+    EXPECTED_TAGS,
+    WHAT_NEED_TO_SHOWN
 };
+
 
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
@@ -73,13 +102,22 @@ coreo_uni_util_jsrunner "tags-rollup" do
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
   function <<-EOH
 var rollup_string = "";
-for (var entry=0; entry < json_input.length; entry++) {
-  console.log(json_input[entry]);
-  if (json_input[entry]['endpoint']['to'].length) {
-    console.log('got an email to rollup');
-    rollup_string = rollup_string + "recipient: " + json_input[entry]['endpoint']['to'] + " - " + "nViolations: " + json_input[entry]['num_violations'] + "\\n";
-  }
+let emailText = '';
+let numberOfViolations = 0;
+let numberOfInstances = 0;
+for (var entry=0; entry < notifiers.length; entry++) {
+    if (notifiers[entry]['endpoint']['to'].length) {
+        numberOfInstances += parseInt(notifiers[entry]['num_instances']);
+        numberOfViolations += parseInt(notifiers[entry]['num_violations']);
+        emailText += "recipient: " + notifiers[entry]['endpoint']['to'] + " - " + "nViolations: " + notifiers[entry]['num_violations'] + "\\n";
+    }
 }
+
+let rollup = 'number of Instances: ' + numberOfInstances + "\\n";
+rollup += 'number of Violations: ' + numberOfViolations + "\\n";
+rollup += emailText;
+
+rollup_string = rollup;
 callback(rollup_string);
   EOH
 end
@@ -100,10 +138,7 @@ coreo_uni_util_notify "advise-atk-rollup" do
 composite name: PLAN::stack_name
 plan name: PLAN::name
 number_of_checks: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_checks
-number_of_instances: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations
 number_violations_ignored: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_ignored_violations
-
-rollup report:
 COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   '
   payload_type 'text'
@@ -122,7 +157,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.1.9"
+                   :version => "1.2.0"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -136,6 +171,32 @@ const AUDIT_NAME = 'ec2-samples';
 const ARE_KILL_SCRIPTS_SHOWN = true;
 const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
 const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
+const WHAT_NEED_TO_SHOWN = {
+    OBJECT_ID: {
+        headerName: 'AWS Object ID',
+        isShown: true,
+    },
+    REGION: {
+        headerName: 'Region',
+        isShown: true,
+    },
+    AWS_CONSOLE: {
+        headerName: 'AWS Console',
+        isShown: true,
+    },
+    TAGS: {
+        headerName: 'Tags',
+        isShown: true,
+    },
+    AMI: {
+        headerName: 'AMI',
+        isShown: false,
+    },
+    KILL_SCRIPTS: {
+        headerName: 'Kill Cmd',
+        isShown: false,
+    }
+};
 
 const VARIABLES = {
     NO_OWNER_EMAIL,
@@ -143,7 +204,8 @@ const VARIABLES = {
     AUDIT_NAME,
     ARE_KILL_SCRIPTS_SHOWN,
     EC2_LOGIC,
-    EXPECTED_TAGS
+    EXPECTED_TAGS,
+    WHAT_NEED_TO_SHOWN
 };
 
 
