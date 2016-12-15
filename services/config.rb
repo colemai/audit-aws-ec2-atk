@@ -42,7 +42,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
   function <<-EOH
   
 const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
+const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT_2}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const AUDIT_NAME = 'ec2-samples';
 const ARE_KILL_SCRIPTS_SHOWN = true;
@@ -130,7 +130,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
   function <<-EOH
 const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
+const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT_2}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const AUDIT_NAME = 'ec2-samples';
 const ARE_KILL_SCRIPTS_SHOWN = true;
