@@ -105,11 +105,11 @@ var rollup_string = "";
 let emailText = '';
 let numberOfViolations = 0;
 let numberOfInstances = 0;
-for (var entry=0; entry < notifiers.length; entry++) {
-    if (notifiers[entry]['endpoint']['to'].length) {
-        numberOfInstances += parseInt(notifiers[entry]['num_instances']);
-        numberOfViolations += parseInt(notifiers[entry]['num_violations']);
-        emailText += "recipient: " + notifiers[entry]['endpoint']['to'] + " - " + "nViolations: " + notifiers[entry]['num_violations'] + "\\n";
+for (var entry=0; entry < json_input.length; entry++) {
+    if (json_input[entry]['endpoint']['to'].length) {
+        numberOfInstances += parseInt(json_input[entry]['num_instances']);
+        numberOfViolations += parseInt(json_input[entry]['num_violations']);
+        emailText += "recipient: " + json_input[entry]['endpoint']['to'] + " - " + "nViolations: " + json_input[entry]['num_violations'] + "\\n";
     }
 }
 
