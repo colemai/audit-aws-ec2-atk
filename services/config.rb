@@ -65,11 +65,55 @@ callback(notifiers);
   EOH
 end
 
+
+coreo_uni_util_jsrunner "tags-rollup" do
+  action :run
+  data_type "text"
+  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
+  function <<-EOH
+var rollup_string = "";
+for (var entry=0; entry < json_input.length; entry++) {
+  console.log(json_input[entry]);
+  if (json_input[entry]['endpoint']['to'].length) {
+    console.log('got an email to rollup');
+    rollup_string = rollup_string + "recipient: " + json_input[entry]['endpoint']['to'] + " - " + "nViolations: " + json_input[entry]['num_violations'] + "\\n";
+  }
+}
+callback(rollup_string);
+  EOH
+end
+
+
 # Send ec2-samples for email
 coreo_uni_util_notify "advise-ec2-samples-to-tag-values" do
-  action :notify
+  action :${AUDIT_AWS_EC2_ATK_OWNERS_HTML_REPORT}
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
 end
+
+coreo_uni_util_notify "advise-elb-rollup" do
+  action :${AUDIT_AWS_EC2_ATK_ROLLUP_REPORT}
+  type 'email'
+  allow_empty true
+  send_on '${AUDIT_AWS_EC2_ATK_SEND_ON}'
+  payload '
+composite name: PLAN::stack_name
+plan name: PLAN::name
+number_of_checks: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_checks
+number_of_violations: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations
+number_violations_ignored: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_ignored_violations
+
+rollup report:
+COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
+  '
+  payload_type 'text'
+  endpoint ({
+      :to => '${AUDIT_AWS_ELB_ALERT_RECIPIENT_2}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
+  })
+end
+=begin
+  AWS ELB END
+=end
+
 
 coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" do
   action :run
@@ -122,10 +166,10 @@ end
 
 
 coreo_uni_util_notify "advise-ec2-samples-2-json" do
-  action :notify
+  action ${AUDIT_AWS_EC2_ATK_FULL_JSON_REPORT}
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
-  send_on 'always'
+  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
   payload '{"composite name":"PLAN::stack_name",
   "plan name":"PLAN::name",
   "number_of_checks":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples-2.number_checks",
