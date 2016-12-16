@@ -150,7 +150,6 @@ end
   AWS ATK END
 =end
 
-
 coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" do
   action :run
   data_type "text"

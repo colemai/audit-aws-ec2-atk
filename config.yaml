@@ -59,3 +59,8 @@ variables:
         - us-west-1
         - us-west-2
         - eu-west-1
+  AUDIT_AWS_EC2_ATK_OWNER_TAG:
+      description: "Enter an AWS tag whose value is an email address of owner of the ELB object. (Optional)"
+      required: false
+      type: string
+      default: "NOT_A_TAG"
