@@ -29,11 +29,6 @@ variables:
     required: true
     type: string
     default:
-  AUDIT_AWS_EC2_ATK_OWNER_TAG:
-    description: "Enter an AWS tag whose value is an email address of owner of the EC2_ATK object. (Optional)"
-    required: false
-    type: string
-    default: "NOT_A_TAG"
   AUDIT_AWS_EC2_ATK_FULL_JSON_REPORT:
     description: "Would you like to send the full JSON report? Options - notify / nothing. Default is notify."
     required: true
