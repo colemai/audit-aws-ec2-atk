@@ -42,7 +42,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
   function <<-EOH
   
 const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
+const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT_2}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
