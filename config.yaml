@@ -18,23 +18,13 @@ variables:
     description: '"or" or "and"'
     required: true
     type: string
-    default: 'and'
+    default: 'or'
   AUDIT_AWS_EC2_ATK_RECIPIENT:
-    description: ""
-    required: false
-    type: string
-    default:
-  AUDIT_AWS_EC2_ATK_RECIPIENT_2:
-    description: "Enter the email address(es) that will receive notifications for objects with no owner tag (Optional, only if owner tag is enabled)."
+    description: "Enter the email address(es) that will receive notifications"
     required: true
     type: string
     default:
-  AUDIT_AWS_EC2_ATK_FULL_JSON_REPORT:
-    description: "Would you like to send the full JSON report? Options - notify / nothing. Default is notify."
-    required: true
-    type: string
-    default: "nothing"
-  AUDIT_AWS_EC2_ATK_OWNERS_HTML_REPORT:
+  AUDIT_AWS_EC2_ATK_HTML_REPORT:
     description: "Would you like to send the AWS owner tag report(s)? Options - notify / nothing. Default is no / nothing."
     required: true
     type: string
