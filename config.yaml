@@ -18,22 +18,27 @@ variables:
     description: '"or" or "and"'
     required: true
     type: string
-    default: '"and"'
-  AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_ADVISE:
-    description: ""
-    required: true
-    type: string
-    default: "nothing"
-  AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_NOTIF:
-    description: ""
-    required: true
-    type: string
-    default: "nothing"
-  AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT:
+    default: 'or'
+  AUDIT_AWS_EC2_ATK_RECIPIENT:
     description: ""
     required: false
     type: string
     default:
+  AUDIT_AWS_EC2_ATK_HTML_REPORT:
+    description: "Would you like to send the AWS owner tag report(s)? Options - notify / nothing. Default is no / nothing."
+    required: true
+    type: string
+    default: "notify"
+  AUDIT_AWS_EC2_ATK_ROLLUP_REPORT:
+    description: "Would you like to send a Summary EC2_ATK report? Options - notify / nothing. Default is no / nothing."
+    required: true
+    type: string
+    default: "nothing"
+  AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS:
+    description: "Would you like to send a kill scripts? Options - notify / nothing. Default is no / nothing."
+    required: true
+    type: string
+    default: "notify"
   AUDIT_AWS_EC2_ATK_REGIONS:
     description: list of AWS regions to check. Default is all regions
     required: true
