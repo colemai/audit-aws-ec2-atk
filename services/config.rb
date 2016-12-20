@@ -42,7 +42,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
   function <<-EOH
   
 const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT_2}";
+const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
@@ -149,7 +149,7 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   '
   payload_type 'text'
   endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
+      :to => '${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
   })
 end
 =begin
@@ -170,7 +170,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
   function <<-EOH
 const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
+const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
@@ -237,24 +237,6 @@ coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   payload 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.return'
   payload_type "html"
   endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
-  })
-end
-
-
-coreo_uni_util_notify "advise-ec2-samples-2-json" do
-  action :nothing
-  type 'email'
-  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
-  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
-  payload '{"composite name":"PLAN::stack_name",
-  "plan name":"PLAN::name",
-  "number_of_checks":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples-2.number_checks",
-  "number_of_violations":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples-2.number_violations",
-  "number_violations_ignored":"COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples-2.number_ignored_violations",
-  "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
-  payload_type "json"
-  endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2-samples-2 advisor alerts on PLAN::stack_name :: PLAN::name'
+      :to => '${AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
   })
 end
