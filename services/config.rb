@@ -33,7 +33,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.2.1"
+                   :version => "1.2.3"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -44,7 +44,11 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
 const JSON = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT_2}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
+const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
+const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
 const AUDIT_NAME = 'ec2-samples';
+
+
 const ARE_KILL_SCRIPTS_SHOWN = true;
 const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
 const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
@@ -83,7 +87,9 @@ const VARIABLES = {
     ARE_KILL_SCRIPTS_SHOWN,
     EC2_LOGIC,
     EXPECTED_TAGS,
-    WHAT_NEED_TO_SHOWN
+    WHAT_NEED_TO_SHOWN,
+    ALLOW_EMPTY,
+    SEND_ON
 };
 
 
@@ -156,7 +162,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.2.1"
+                   :version => "1.2.3"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -166,7 +172,11 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
 const JSON = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT_2}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
+const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
+const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
 const AUDIT_NAME = 'ec2-samples';
+
+
 const ARE_KILL_SCRIPTS_SHOWN = true;
 const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
 const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
@@ -189,13 +199,14 @@ const WHAT_NEED_TO_SHOWN = {
     },
     AMI: {
         headerName: 'AMI',
-        isShown: true,
+        isShown: false,
     },
     KILL_SCRIPTS: {
         headerName: 'Kill Cmd',
         isShown: false,
     }
 };
+
 
 const VARIABLES = {
     NO_OWNER_EMAIL,
@@ -204,8 +215,11 @@ const VARIABLES = {
     ARE_KILL_SCRIPTS_SHOWN,
     EC2_LOGIC,
     EXPECTED_TAGS,
-    WHAT_NEED_TO_SHOWN
+    WHAT_NEED_TO_SHOWN,
+    ALLOW_EMPTY,
+    SEND_ON
 };
+
 
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
