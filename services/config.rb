@@ -6,6 +6,7 @@
 coreo_aws_advisor_alert "ec2-get-all-instances-older-than" do
   action :define
   service :ec2
+  link "http://kb.cloudcoreo.com/mydoc_ec2-alert-to-kill.html"
   display_name "Alert to Kill"
   description "EC2 instance was launched within the last 5 minutes that violates tag policy (does not have the necessary tags)."
   category "Policy"
