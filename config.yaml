@@ -21,7 +21,7 @@ variables:
     default: 'or'
   AUDIT_AWS_EC2_ATK_RECIPIENT:
     description: ""
-    required: false
+    required: true
     type: string
     default:
   AUDIT_AWS_EC2_ATK_HTML_REPORT:
