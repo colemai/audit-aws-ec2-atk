@@ -93,12 +93,14 @@ const VARIABLES = {
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(json, VARIABLES);
-const notifiers = JSON.stringify(AuditEC2ATK.getNotifiers());
-const violations = JSON.stringify(AuditEC2ATK.getSortedJSON());
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 
-coreoExport('violations', violations);
+const notifiers = JSON.stringify(AuditEC2ATK.getNotifiers());
 coreoExport('notifiers', notifiers);
+
+const violations = JSON.stringify(AuditEC2ATK.getSortedJSON());
+coreoExport('violations', violations);
+
 callback(HTMLKillScripts);
   EOH
 end
