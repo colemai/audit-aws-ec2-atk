@@ -19,7 +19,7 @@ end
 
 # this resource simply executes the alert that was defined above
 #
-coreo_aws_advisor_ec2 "advise-ec2-samples" do
+coreo_aws_advisor_ec2 "advise-ec2-atk" do
   alerts ["ec2-get-all-instances-older-than"]
   action :advise
   regions ${AUDIT_AWS_EC2_ATK_REGIONS}
@@ -27,7 +27,7 @@ end
 
 # this is doing the owner tag parsing only - it needs to also include the kill tag logic (and/or)
 #
-coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
+coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   action :run
   data_type "json"
   packages([
@@ -37,8 +37,8 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-samples" do
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations,
-                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
+                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_violations,
+                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
   function <<-EOH
   
 const JSON = json_input;
@@ -46,7 +46,7 @@ const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2';
+const AUDIT_NAME = 'ec2-samples';
 
 
 const ARE_KILL_SCRIPTS_SHOWN = true;
@@ -101,11 +101,17 @@ callback(notifiers);
   EOH
 end
 
+coreo_uni_util_variables "update-advisor-output" do
+  action :set
+  variables([
+       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
+      ])
+end
 
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
+  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
   function <<-EOH
 var rollup_string = "";
 let emailText = '';
@@ -129,10 +135,10 @@ callback(rollup_string);
 end
 
 
-# Send ec2-samples for email
-coreo_uni_util_notify "advise-ec2-samples-to-tag-values" do
+# Send ec2-atk for email
+coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
-  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-samples.return'
+  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
 end
 
 coreo_uni_util_notify "advise-atk-rollup" do
@@ -164,10 +170,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
                    :name => "cloudcoreo-jsrunner-commons",
                    :version => "1.3.5"
                }       ])
-  json_input '{ "composite name":"PLAN::stack_name",
-                "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.number_violations,
-                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-samples.report}'
+  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
   function <<-EOH
 const JSON = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
