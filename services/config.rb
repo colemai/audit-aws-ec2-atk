@@ -97,16 +97,8 @@ const notifiers = AuditEC2ATK.getNotifiers();
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 const violations = AuditEC2ATK.getViolationObjects();
 
-Object.keys(violations).forEach((objectId) => {
-  const objectViolations = violations[objectId].violations;
-  Object.keys(objectViolations).forEach((violationId) => {
-    const violation = objectViolations[violationId];
-    if (violation.notShow) delete objectViolations[violationId];
-  });
-});
 coreoExport('HTMLKillScripts', HTMLKillScripts);
 coreoExport('notifiers', notifiers);
-
 callback(violations);
   EOH
 end
