@@ -25,54 +25,6 @@ coreo_aws_advisor_ec2 "advise-ec2-atk" do
   regions ${AUDIT_AWS_EC2_ATK_REGIONS}
 end
 
-coreo_uni_util_jsrunner "tags-policy-check-ec2-atk" do
-  action :run
-  data_type "json"
-  packages([
-               {
-                   :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.5"
-               }       ])
-  json_input '{ "composite name":"PLAN::stack_name",
-                "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_violations,
-                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
-  function <<-EOH
-
-const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
-const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
-const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
-const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2-atk';
-
-const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}";
-const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
-const VARIABLES = {
-    EC2_LOGIC,
-    EXPECTED_TAGS
-};
-const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
-const violations = AuditEC2ATK.getViolationObjects();
-Object.keys(violations).forEach((objectId)=> {
-  const objectViolations = violations[objectId].violations;
-  Object.keys(objectViolations).forEach((violationId) => {
-    const violation = objectViolations[violationId];
-    if (violation.notShow) delete objectViolations[violationId];
-  });
-});
-callback(violations);
-  EOH
-end
-
-coreo_uni_util_variables "update-advisor-output" do
-  action :set
-  variables([
-                {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-policy-check-ec2-atk.return'}
-            ])
-end
-
 # this is doing the owner tag parsing only - it needs to also include the kill tag logic (and/or)
 #
 coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
@@ -127,7 +79,6 @@ const WHAT_NEED_TO_SHOWN = {
     }
 };
 
-
 const VARIABLES = {
     NO_OWNER_EMAIL,
     OWNER_TAG,
@@ -140,19 +91,55 @@ const VARIABLES = {
     SEND_ON
 };
 
-
-
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
 const notifiers = AuditEC2ATK.getNotifiers();
-callback(notifiers);
+const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
+const violations = AuditEC2ATK.getViolationObjects();
+
+Object.keys(violations).forEach((objectId) => {
+  const objectViolations = violations[objectId].violations;
+  Object.keys(objectViolations).forEach((violationId) => {
+    const violation = objectViolations[violationId];
+    if (violation.notShow) delete objectViolations[violationId];
+  });
+});
+coreoExport('HTMLKillScripts', HTMLKillScripts);
+coreoExport('notifiers', notifiers);
+
+callback(violations);
   EOH
+end
+
+coreo_uni_util_variables "update-advisor-output" do
+  action :set
+  variables([
+       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
+      ])
+end
+
+# Send ec2-atk for email
+coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
+  action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
+  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
+end
+
+coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
+  action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
+  type 'email'
+  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
+  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
+  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
+  payload_type "html"
+  endpoint ({
+      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
+  })
 end
 
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
+  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
   function <<-EOH
 var rollup_string = "";
 let emailText = '';
@@ -175,13 +162,6 @@ callback(rollup_string);
   EOH
 end
 
-
-# Send ec2-atk for email
-coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
-  action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
-  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
-end
-
 coreo_uni_util_notify "advise-atk-rollup" do
   action :${AUDIT_AWS_EC2_ATK_ROLLUP_REPORT}
   type 'email'
@@ -197,93 +177,5 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   payload_type 'text'
   endpoint ({
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
-  })
-end
-=begin
-  AWS ATK END
-=end
-
-coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" do
-  action :run
-  data_type "text"
-  packages([
-               {
-                   :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.5"
-               }       ])
-  json_input '{ "composite name":"PLAN::stack_name",
-                "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_violations,
-                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
-  function <<-EOH
-const JSON = json_input;
-const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
-const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
-const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
-const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2';
-
-
-const ARE_KILL_SCRIPTS_SHOWN = true;
-const EC2_LOGIC = "${AUDIT_AWS_EC2_ATK_TAG_LOGIC}"; // you can choose 'and' or 'or';
-const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
-const WHAT_NEED_TO_SHOWN = {
-    OBJECT_ID: {
-        headerName: 'AWS Object ID',
-        isShown: true,
-    },
-    REGION: {
-        headerName: 'Region',
-        isShown: true,
-    },
-    AWS_CONSOLE: {
-        headerName: 'AWS Console',
-        isShown: true,
-    },
-    TAGS: {
-        headerName: 'Tags',
-        isShown: true,
-    },
-    AMI: {
-        headerName: 'AMI',
-        isShown: false,
-    },
-    KILL_SCRIPTS: {
-        headerName: 'Kill Cmd',
-        isShown: false,
-    }
-};
-
-
-const VARIABLES = {
-    NO_OWNER_EMAIL,
-    OWNER_TAG,
-    AUDIT_NAME,
-    ARE_KILL_SCRIPTS_SHOWN,
-    EC2_LOGIC,
-    EXPECTED_TAGS,
-    WHAT_NEED_TO_SHOWN,
-    ALLOW_EMPTY,
-    SEND_ON
-};
-
-
-
-const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
-const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
-callback(HTMLKillScripts)
-  EOH
-end
-
-coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
-  type 'email'
-  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
-  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
-  payload 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.return'
-  payload_type "html"
-  endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
   })
 end
