@@ -144,18 +144,6 @@ coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.notifiers-ec2-atk.return'
 end
 
-coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
-  type 'email'
-  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
-  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
-  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
-  payload_type "html"
-  endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
-  })
-end
-
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
@@ -197,5 +185,18 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   payload_type 'text'
   endpoint ({
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
+  })
+end
+
+
+coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
+  action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
+  type 'email'
+  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
+  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
+  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
+  payload_type "html"
+  endpoint ({
+      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
   })
 end
