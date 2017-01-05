@@ -120,8 +120,7 @@ coreo_uni_util_jsrunner "notifiers-ec2-atk" do
                }       ])
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
   function <<-EOH
-const notifiers = JSON.parse(json_input);
-callback(notifiers);
+callback(json_input);
   EOH
 end
 
@@ -142,8 +141,7 @@ coreo_uni_util_jsrunner "html-kill-scripts-ec2-atk" do
                }       ])
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
   function <<-EOH
-const scripts = JSON.parse(json_input);
-callback(scripts);
+callback(json_input);
   EOH
 end
 
