@@ -139,9 +139,8 @@ coreo_uni_util_jsrunner "html-kill-scripts-ec2-atk" do
                    :name => "cloudcoreo-jsrunner-commons",
                    :version => "1.3.7"
                }       ])
-  json_input 'HTMLKillScripts: "COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts"'
+  json_input '"COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts"'
   function <<-EOH
-const data = JSON.parse(json_input.HTMLKillScripts);
 callback(data);
   EOH
 end
