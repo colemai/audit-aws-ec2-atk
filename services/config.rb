@@ -96,8 +96,9 @@ const VARIABLES = {
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
-const violatingObjects = AuditEC2ATK.getViolationObjects();
-callback(violatingObjects);
+const notifiers = AuditEC2ATK.getNotifiers();
+notifiers.violations = AuditEC2ATK.getViolationObjects();
+callback(notifiers);
   EOH
 end
 
