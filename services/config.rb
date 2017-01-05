@@ -141,7 +141,8 @@ coreo_uni_util_jsrunner "html-kill-scripts-ec2-atk" do
                }       ])
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
   function <<-EOH
-callback(json_input);
+const data = JSON.parse(json_input);
+callback(data);
   EOH
 end
 
