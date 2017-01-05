@@ -109,19 +109,50 @@ coreo_uni_util_variables "update-advisor-output" do
        {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
       ])
 end
+#
+# coreo_uni_util_jsrunner "notifiers-ec2-atk" do
+#   action :run
+#   data_type "json"
+#   packages([
+#                {
+#                    :name => "cloudcoreo-jsrunner-commons",
+#                    :version => "1.3.7"
+#                }       ])
+#   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
+#   function <<-EOH
+# const notifiers = JSON.parse(json_input);
+# callback(notifiers);
+#   EOH
+# end
 
 # Send ec2-atk for email
 coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
-  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
+  notifiers 'JSON.parse(COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers)'
 end
+
+#
+# coreo_uni_util_jsrunner "html-kill-scripts-ec2-atk" do
+#   action :run
+#   data_type "json"
+#   packages([
+#                {
+#                    :name => "cloudcoreo-jsrunner-commons",
+#                    :version => "1.3.7"
+#                }       ])
+#   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
+#   function <<-EOH
+# const scripts = JSON.parse(json_input);
+# callback(scripts);
+#   EOH
+# end
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
-  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
+  payload 'JSON.parse(COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts)'
   payload_type "html"
   endpoint ({
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
@@ -131,7 +162,7 @@ end
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
+  json_input 'JSON.parse(COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers)'
   function <<-EOH
 var rollup_string = "";
 let emailText = '';
