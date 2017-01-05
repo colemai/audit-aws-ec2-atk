@@ -47,7 +47,7 @@ const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2';
+const AUDIT_NAME = 'ec2-samples';
 
 
 const ARE_KILL_SCRIPTS_SHOWN = true;
@@ -179,8 +179,6 @@ coreo_uni_util_notify "advise-atk-rollup" do
   payload '
 composite name: PLAN::stack_name
 plan name: PLAN::name
-number_of_checks: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_checks
-number_violations_ignored: COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_ignored_violations
 COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   '
   payload_type 'text'
@@ -207,7 +205,7 @@ const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2-atk';
+const AUDIT_NAME = 'ec2-samples';
 
 
 const ARE_KILL_SCRIPTS_SHOWN = true;
