@@ -130,27 +130,12 @@ coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.notifiers-ec2-atk.return'
 end
 
-
-coreo_uni_util_jsrunner "html-kill-scripts-ec2-atk" do
-  action :run
-  data_type "json"
-  packages([
-               {
-                   :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.7"
-               }       ])
-  json_input '"COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts"'
-  function <<-EOH
-callback(data);
-  EOH
-end
-
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
-  payload 'COMPOSITE::coreo_uni_util_jsrunner.html-kill-scripts-ec2-atk.return'
+  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
   payload_type "html"
   endpoint ({
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
