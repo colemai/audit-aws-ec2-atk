@@ -33,7 +33,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.2.5"
+                   :version => "1.3.4"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -96,10 +96,16 @@ const VARIABLES = {
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
-const notifiers = AuditEC2ATK.getNotifiers();
-notifiers.violations = json_input.violations;
-callback(notifiers);
+const violatingObjects = AuditEC2ATK.getViolationObjects();
+callback(violatingObjects);
   EOH
+end
+
+coreo_uni_util_variables "update-advisor-output" do
+  action :set
+  variables([
+       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
+      ])
 end
 
 coreo_uni_util_jsrunner "tags-rollup" do
@@ -162,7 +168,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.2.6"
+                   :version => "1.3.4"
                }       ])
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
   function <<-EOH
