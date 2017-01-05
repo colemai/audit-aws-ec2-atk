@@ -198,7 +198,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.notifiers.number_violations,
+                "number_of_instances": "COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_violations",
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations}'
   function <<-EOH
 const JSON = json_input;
