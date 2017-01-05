@@ -97,8 +97,8 @@ const notifiers = AuditEC2ATK.getNotifiers();
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 const violations = AuditEC2ATK.getViolationObjects();
 
-coreoExport('HTMLKillScripts', HTMLKillScripts);
-coreoExport('notifiers', notifiers);
+coreoExport('HTMLKillScripts', JSON.stringify(HTMLKillScripts));
+coreoExport('notifiers', JSON.stringify(notifiers));
 callback(violations);
   EOH
 end
