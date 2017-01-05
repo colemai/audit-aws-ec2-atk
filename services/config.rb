@@ -41,7 +41,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
                 "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
   function <<-EOH
   
-const JSON = json_input;
+const json = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
@@ -92,7 +92,7 @@ const VARIABLES = {
 };
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON, VARIABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(json, VARIABLES);
 const notifiers = JSON.stringify(AuditEC2ATK.getNotifiers());
 const HTMLKillScripts = JSON.stringify(AuditEC2ATK.getHTMLKillScripts());
 const violations = AuditEC2ATK.getViolationObjects();
