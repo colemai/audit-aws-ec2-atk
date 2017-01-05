@@ -101,13 +101,6 @@ callback(notifiers);
   EOH
 end
 
-coreo_uni_util_variables "update-advisor-output" do
-  action :set
-  variables([
-       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
-      ])
-end
-
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
@@ -243,4 +236,12 @@ coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   endpoint ({
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
   })
+end
+
+
+coreo_uni_util_variables "update-advisor-output" do
+  action :set
+  variables([
+                {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
+            ])
 end
