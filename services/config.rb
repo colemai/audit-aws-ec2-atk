@@ -101,6 +101,13 @@ callback(notifiers);
   EOH
 end
 
+coreo_uni_util_variables "update-advisor-output" do
+  action :set
+  variables([
+       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
+      ])
+end
+
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
