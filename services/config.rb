@@ -34,7 +34,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.7"
+                   :version => "1.3.8"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -110,7 +110,7 @@ coreo_uni_util_jsrunner "violations-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.7"
+                   :version => "1.3.8"
                }       ])
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.violations'
   function <<-EOH
@@ -131,7 +131,7 @@ coreo_uni_util_jsrunner "notifiers-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.7"
+                   :version => "1.3.8"
                }       ])
   json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
   function <<-EOH
@@ -193,7 +193,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.7"
+                   :version => "1.3.8"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
