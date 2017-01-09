@@ -193,7 +193,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.9"
+                   :version => "1.4.3"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
