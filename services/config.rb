@@ -189,7 +189,7 @@ const VARIABLES = {
 };
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(json, VARIABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const notifiers = JSON.stringify(AuditEC2ATK.getNotifiers());
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts(); //TODO: scripts are returned as string. This should be fixed and used insted of last jsrunner
@@ -444,7 +444,7 @@ const VARIABLES = {
 };
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(json, VARIABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const notifiers = JSON.stringify(AuditEC2ATK.getNotifiers());
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts(); //TODO: scripts are returned as string. This should be fixed and used insted of last jsrunner
