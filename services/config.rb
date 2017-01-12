@@ -190,7 +190,7 @@ const VARIABLES = {
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
-const notifiers = JSON.stringify(AuditEC2ATK.getNotifiers());
+const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 callback(notifiers);
   EOH
@@ -422,39 +422,4 @@ coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   endpoint ({
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
   })
-end
-
-coreo_uni_util_jsrunner "violations-ec2-atk" do
-  action :run
-  data_type "json"
-  packages([
-               {
-                   :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.9"
-               }       ])
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.violations'
-  function <<-EOH
-callback(json_input);
-  EOH
-end
-
-coreo_uni_util_variables "update-advisor-output" do
-  action :set
-  variables([
-                {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.violations-ec2-atk.return'}
-            ])
-end
-
-coreo_uni_util_jsrunner "notifiers-ec2-atk" do
-  action :run
-  data_type "json"
-  packages([
-               {
-                   :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.3.9"
-               }       ])
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.notifiers'
-  function <<-EOH
-callback(json_input);
-  EOH
 end
