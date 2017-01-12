@@ -196,17 +196,17 @@ const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts(); //TODO: scripts are re
 
 coreoExport('violations', violations);
 coreoExport('notifiers', notifiers);
-callback(HTMLKillScripts);
+callback(notifiers);
   EOH
 end
 
-#
-# coreo_uni_util_variables "update-advisor-output" do
-#   action :set
-#   variables([
-#        {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.violations-ec2-atk.return'}
-#       ])
-# end
+
+coreo_uni_util_variables "update-advisor-output" do
+  action :set
+  variables([
+       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.violations-ec2-atk.return'}
+      ])
+end
 
 # Send ec2-atk for email
 coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
