@@ -215,7 +215,7 @@ for (var entry=0; entry < json_input.length; entry++) {
     if (json_input[entry]['endpoint']['to'].length) {
         numberOfInstances += parseInt(json_input[entry]['num_instances']);
         numberOfViolations += parseInt(json_input[entry]['num_violations']);
-        emailText += "recipient: " + json_input[entry]['endpoint']['to'] + " - " + "\nViolations: " + 
+        emailText += "recipient: " + json_input[entry]['endpoint']['to'] + " - " + " "\nViolations: " + 
 json_input[entry]['num_violations'] + "\\n";
     }
 }
