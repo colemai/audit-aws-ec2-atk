@@ -200,24 +200,24 @@ callback(notifiers);
   EOH
 end
 
-
-coreo_uni_util_variables "update-advisor-output" do
-  action :set
-  variables([
-       {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.violations-ec2-atk.return'}
-      ])
-end
+#
+# coreo_uni_util_variables "update-advisor-output" do
+#   action :set
+#   variables([
+#        {'COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations' => 'COMPOSITE::coreo_uni_util_jsrunner.violations-ec2-atk.return'}
+#       ])
+# end
 
 # Send ec2-atk for email
 coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
-  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.notifiers-ec2-atk.return'
+  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
 end
 
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
   data_type "text"
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.notifiers-ec2-atk.return'
+  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
   function <<-EOH
 var rollup_string = "";
 let emailText = '';
