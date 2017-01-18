@@ -1,0 +1,4 @@
+ec2-get-all-instances-older-than:
+  "AWS Object ID": "__OBJECT__~https://console.aws.amazon.com/ec2/v2/home?region=+__OBJECT__.violations.__RULE__.region+#Instances:search=+__OBJECT__+;sort=desc:tag:Name"
+  "AWS Region": "+__OBJECT__.violations.__RULE__.region+"
+  "AWS Tags": "__TAGS__"
