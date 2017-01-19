@@ -275,6 +275,7 @@ const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, AUDIT_NAME,
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES, TABLES);
+const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 callback(notifiers);
   EOH
