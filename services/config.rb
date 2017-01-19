@@ -42,6 +42,7 @@ coreo_uni_util_jsrunner "jsrunner-process-suppression" do
   let suppression;
   try {
       suppression = yaml.safeLoad(fs.readFileSync('./suppression.yaml', 'utf8'));
+  } catch (e) {
   }
   coreoExport('suppression', JSON.stringify(suppression));
   var violations = json_input.violations;
@@ -127,6 +128,7 @@ coreo_uni_util_jsrunner "jsrunner-process-table" do
     var yaml = require('js-yaml');
     try {
         var table = yaml.safeLoad(fs.readFileSync('./table.yaml', 'utf8'));
+    } catch (e) {
     }
     coreoExport('table', JSON.stringify(table));
     callback(table);
