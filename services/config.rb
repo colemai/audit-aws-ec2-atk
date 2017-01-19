@@ -26,6 +26,114 @@ coreo_aws_advisor_ec2 "advise-ec2-atk" do
   regions ${AUDIT_AWS_EC2_ATK_REGIONS}
 end
 
+
+coreo_uni_util_jsrunner "jsrunner-process-suppression" do
+  action :run
+  provide_composite_access true
+  json_input '{"violations":COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
+  packages([
+               {
+                   :name => "js-yaml",
+                   :version => "3.7.0"
+               }       ])
+  function <<-EOH
+  var fs = require('fs');
+  var yaml = require('js-yaml');
+  let suppression;
+  try {
+      suppression = yaml.safeLoad(fs.readFileSync('./suppression.yaml', 'utf8'));
+  }
+  coreoExport('suppression', JSON.stringify(suppression));
+  var violations = json_input.violations;
+  var result = {};
+    var file_date = null;
+    for (var violator_id in violations) {
+        result[violator_id] = {};
+        result[violator_id].tags = violations[violator_id].tags;
+        result[violator_id].violations = {}
+        for (var rule_id in violations[violator_id].violations) {
+            is_violation = true;
+ 
+            result[violator_id].violations[rule_id] = violations[violator_id].violations[rule_id];
+            for (var suppress_rule_id in suppression) {
+                for (var suppress_violator_num in suppression[suppress_rule_id]) {
+                    for (var suppress_violator_id in suppression[suppress_rule_id][suppress_violator_num]) {
+                        file_date = null;
+                        var suppress_obj_id_time = suppression[suppress_rule_id][suppress_violator_num][suppress_violator_id];
+                        if (rule_id === suppress_rule_id) {
+ 
+                            if (violator_id === suppress_violator_id) {
+                                var now_date = new Date();
+ 
+                                if (suppress_obj_id_time === "") {
+                                    suppress_obj_id_time = new Date();
+                                } else {
+                                    file_date = suppress_obj_id_time;
+                                    suppress_obj_id_time = file_date;
+                                }
+                                var rule_date = new Date(suppress_obj_id_time);
+                                if (isNaN(rule_date.getTime())) {
+                                    rule_date = new Date(0);
+                                }
+ 
+                                if (now_date <= rule_date) {
+ 
+                                    is_violation = false;
+ 
+                                    result[violator_id].violations[rule_id]["suppressed"] = true;
+                                    if (file_date != null) {
+                                        result[violator_id].violations[rule_id]["suppressed_until"] = file_date;
+                                        result[violator_id].violations[rule_id]["suppression_expired"] = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+ 
+                }
+            }
+            if (is_violation) {
+ 
+                if (file_date !== null) {
+                    result[violator_id].violations[rule_id]["suppressed_until"] = file_date;
+                    result[violator_id].violations[rule_id]["suppression_expired"] = true;
+                } else {
+                    result[violator_id].violations[rule_id]["suppression_expired"] = false;
+                }
+                result[violator_id].violations[rule_id]["suppressed"] = false;
+            }
+        }
+    }
+ 
+    var rtn = result;
+  
+  var rtn = result;
+  
+  callback(result);
+  EOH
+end
+
+coreo_uni_util_jsrunner "jsrunner-process-table" do
+  action :run
+  provide_composite_access true
+  json_input '{"violations":COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
+  packages([
+               {
+                   :name => "js-yaml",
+                   :version => "3.7.0"
+               }       ])
+  function <<-EOH
+    var fs = require('fs');
+    var yaml = require('js-yaml');
+    try {
+        var table = yaml.safeLoad(fs.readFileSync('./table.yaml', 'utf8'));
+    }
+    coreoExport('table', JSON.stringify(table));
+    callback(table);
+  EOH
+end
+
+
 # this is doing the owner tag parsing only - it needs to also include the kill tag logic (and/or)
 #
 coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
@@ -34,12 +142,12 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.4.6"
+                   :version => "1.6.0"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_violations,
-                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
+                "table": COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-table.return,
+                "violations": COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-suppression.return}'
   function <<-EOH
   
 function setTagsLengthFromEc2Logic(EC2_LOGIC, EXPECTED_TAGS) {
@@ -81,6 +189,7 @@ const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
 const AUDIT_NAME = 'ec2-samples';
+const TABLES = json_input['table'];
 const SHOWN_NOT_SORTED_VIOLATIONS_COUNTER = true;
 
 
@@ -150,47 +259,20 @@ const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
 };
 
 const WHAT_NEED_TO_SHOWN_ON_TABLE = {
-    OBJECT_ID: {
-        headerName: 'AWS Object ID',
-        isShown: true,
-    },
-    REGION: {
-        headerName: 'Region',
-        isShown: true,
-    },
-    AWS_CONSOLE: {
-        headerName: 'AWS Console',
-        isShown: true,
-    },
-    TAGS: {
-        headerName: 'Tags',
-        isShown: true,
-    },
-    AMI: {
-        headerName: 'AMI',
-        isShown: false,
-    },
-    KILL_SCRIPTS: {
-        headerName: 'Kill Cmd',
-        isShown: false,
-    }
+    OBJECT_ID: { headerName: 'AWS Object ID', isShown: true},
+    REGION: { headerName: 'Region', isShown: true },
+    AWS_CONSOLE: { headerName: 'AWS Console', isShown: true },
+    TAGS: { headerName: 'Tags', isShown: true },
+    AMI: { headerName: 'AMI', isShown: false },
+    KILL_SCRIPTS: { headerName: 'Kill Cmd', isShown: false }
 };
 
-const VARIABLES = {
-    NO_OWNER_EMAIL,
-    OWNER_TAG,
-    AUDIT_NAME,
-    WHAT_NEED_TO_SHOWN_ON_TABLE,
-    ALLOW_EMPTY,
-    SEND_ON,
-    sortFuncForViolationAuditPanel,
-    sortFuncForHTMLReport,
-    SHOWN_NOT_SORTED_VIOLATIONS_COUNTER
-};
+const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, AUDIT_NAME,
+    WHAT_NEED_TO_SHOWN_ON_TABLE, ALLOW_EMPTY, SEND_ON,
+    sortFuncForViolationAuditPanel, sortFuncForHTMLReport, SHOWN_NOT_SORTED_VIOLATIONS_COUNTER};
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
-const notifiers = AuditEC2ATK.getNotifiers();
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES, TABLES);
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 callback(notifiers);
   EOH
@@ -250,12 +332,12 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.4.6"
+                   :version => "1.6.0"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
-                "number_of_instances": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.number_violations,
-                "violations": COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report.violations}'
+                "table": COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-table.return,
+                "violations": COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-suppression.return}'
   function <<-EOH
 
 function setTagsLengthFromEc2Logic(EC2_LOGIC, EXPECTED_TAGS) {
@@ -297,6 +379,7 @@ const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
 const AUDIT_NAME = 'ec2-samples';
+const TABLES = json_input['table'];
 const SHOWN_NOT_SORTED_VIOLATIONS_COUNTER = true;
 
 
@@ -366,46 +449,20 @@ const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
 };
 
 const WHAT_NEED_TO_SHOWN_ON_TABLE = {
-    OBJECT_ID: {
-        headerName: 'AWS Object ID',
-        isShown: true,
-    },
-    REGION: {
-        headerName: 'Region',
-        isShown: true,
-    },
-    AWS_CONSOLE: {
-        headerName: 'AWS Console',
-        isShown: true,
-    },
-    TAGS: {
-        headerName: 'Tags',
-        isShown: true,
-    },
-    AMI: {
-        headerName: 'AMI',
-        isShown: false,
-    },
-    KILL_SCRIPTS: {
-        headerName: 'Kill Cmd',
-        isShown: false,
-    }
+    OBJECT_ID: { headerName: 'AWS Object ID', isShown: true},
+    REGION: { headerName: 'Region', isShown: true },
+    AWS_CONSOLE: { headerName: 'AWS Console', isShown: true },
+    TAGS: { headerName: 'Tags', isShown: true },
+    AMI: { headerName: 'AMI', isShown: false },
+    KILL_SCRIPTS: { headerName: 'Kill Cmd', isShown: false }
 };
 
-const VARIABLES = {
-    NO_OWNER_EMAIL,
-    OWNER_TAG,
-    AUDIT_NAME,
-    WHAT_NEED_TO_SHOWN_ON_TABLE,
-    ALLOW_EMPTY,
-    SEND_ON,
-    sortFuncForViolationAuditPanel,
-    sortFuncForHTMLReport,
-    SHOWN_NOT_SORTED_VIOLATIONS_COUNTER
-};
+const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, AUDIT_NAME,
+    WHAT_NEED_TO_SHOWN_ON_TABLE, ALLOW_EMPTY, SEND_ON,
+    sortFuncForViolationAuditPanel, sortFuncForHTMLReport, SHOWN_NOT_SORTED_VIOLATIONS_COUNTER};
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES, TABLES);
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts(); 
 callback(HTMLKillScripts)
   EOH
