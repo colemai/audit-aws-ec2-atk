@@ -21,14 +21,14 @@ variables:
     default: 'or'
   AUDIT_AWS_EC2_ATK_RECIPIENT:
     description: "Enter the email address(es) that will receive notifications. If more than one, separate each with a comma."
-    required: true
+    required: false
     type: string
     default:
   AUDIT_AWS_EC2_ATK_HTML_REPORT:
     description: "Would you like to send the AWS owner tag report(s)? Options - notify / nothing. Default is nothing."
     required: true
     type: string
-    default: "notify"
+    default: "nothing"
   AUDIT_AWS_EC2_ATK_ROLLUP_REPORT:
     description: "Would you like to send a rollup EC2 Alert-to-Kill report? This is a short email that summarizes the number of checks performed and the number of violations found. Options - notify / nothing. Default is nothing."
     required: true
