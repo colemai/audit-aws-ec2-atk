@@ -16,6 +16,7 @@ coreo_aws_advisor_alert "ec2-get-all-instances-older-than" do
   audit_objects ["reservation_set.instances_set.launch_time"]
   operators ["<"]
   alert_when ["5.minutes.ago"]
+  id_map "object.reservation_set.instances_set.instance_id"
 end
 
 # this resource simply executes the alert that was defined above

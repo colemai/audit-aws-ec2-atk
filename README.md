@@ -14,7 +14,7 @@ This repo is designed to work with CloudCoreo.
 
 ## Required variables with no default
 
-### `AUDIT_AWS_EC2_ATK_ALERT_TO_KILL_RECIPIENT`:
+### `AUDIT_AWS_EC2_ATK_RECIPIENT`:
   * description: 
 
 
@@ -34,7 +34,19 @@ This repo is designed to work with CloudCoreo.
 
 ### `AUDIT_AWS_EC2_ATK_TAG_LOGIC`:
   * description: "or" or "and"
-  * default: "and"
+  * default: or
+
+### `AUDIT_AWS_EC2_ATK_HTML_REPORT`:
+  * description: Would you like to send the AWS owner tag report(s)? Options - notify / nothing. Default is no / nothing.
+  * default: notify
+
+### `AUDIT_AWS_EC2_ATK_ROLLUP_REPORT`:
+  * description: Would you like to send a Summary EC2_ATK report? Options - notify / nothing. Default is no / nothing.
+  * default: nothing
+
+### `AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS`:
+  * description: Would you like to send a kill scripts? Options - notify / nothing. Default is no / nothing.
+  * default: notify
 
 ### `AUDIT_AWS_EC2_ATK_REGIONS`:
   * description: list of AWS regions to check. Default is all regions
