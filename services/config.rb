@@ -1,3 +1,6 @@
+###########################################
+# User Visible Rule Definitions
+###########################################
 
 # defines as the alert any EC2 instances that were launched more than 5 minutes ago
 # this set will be post-processed by the jsrunner below to examine the tags - nothing is directly
@@ -18,6 +21,11 @@ coreo_aws_advisor_alert "ec2-get-all-instances-older-than" do
   alert_when ["5.minutes.ago"]
   id_map "object.reservation_set.instances_set.instance_id"
 end
+
+###########################################
+# Compsite-Internal Resources follow until end
+#   (Resources used by the system for execution and display processing)
+###########################################
 
 # this resource simply executes the alert that was defined above
 #
