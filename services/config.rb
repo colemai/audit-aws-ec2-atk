@@ -46,78 +46,81 @@ coreo_uni_util_jsrunner "jsrunner-process-suppression" do
                    :version => "3.7.0"
                }       ])
   function <<-EOH
-  var fs = require('fs');
-  var yaml = require('js-yaml');
+  const fs = require('fs');
+  const yaml = require('js-yaml');
   let suppression;
   try {
       suppression = yaml.safeLoad(fs.readFileSync('./suppression.yaml', 'utf8'));
   } catch (e) {
   }
   coreoExport('suppression', JSON.stringify(suppression));
-  var violations = json_input.violations;
-  var result = {};
-    var file_date = null;
-    for (var violator_id in violations) {
-        result[violator_id] = {};
-        result[violator_id].tags = violations[violator_id].tags;
-        result[violator_id].violations = {}
-        for (var rule_id in violations[violator_id].violations) {
-            is_violation = true;
- 
-            result[violator_id].violations[rule_id] = violations[violator_id].violations[rule_id];
-            for (var suppress_rule_id in suppression) {
-                for (var suppress_violator_num in suppression[suppress_rule_id]) {
-                    for (var suppress_violator_id in suppression[suppress_rule_id][suppress_violator_num]) {
-                        file_date = null;
-                        var suppress_obj_id_time = suppression[suppress_rule_id][suppress_violator_num][suppress_violator_id];
-                        if (rule_id === suppress_rule_id) {
- 
-                            if (violator_id === suppress_violator_id) {
-                                var now_date = new Date();
- 
-                                if (suppress_obj_id_time === "") {
-                                    suppress_obj_id_time = new Date();
-                                } else {
-                                    file_date = suppress_obj_id_time;
-                                    suppress_obj_id_time = file_date;
-                                }
-                                var rule_date = new Date(suppress_obj_id_time);
-                                if (isNaN(rule_date.getTime())) {
-                                    rule_date = new Date(0);
-                                }
- 
-                                if (now_date <= rule_date) {
- 
-                                    is_violation = false;
- 
-                                    result[violator_id].violations[rule_id]["suppressed"] = true;
-                                    if (file_date != null) {
-                                        result[violator_id].violations[rule_id]["suppressed_until"] = file_date;
-                                        result[violator_id].violations[rule_id]["suppression_expired"] = false;
-                                    }
-                                }
-                            }
-                        }
-                    }
- 
-                }
-            }
-            if (is_violation) {
- 
-                if (file_date !== null) {
-                    result[violator_id].violations[rule_id]["suppressed_until"] = file_date;
-                    result[violator_id].violations[rule_id]["suppression_expired"] = true;
-                } else {
-                    result[violator_id].violations[rule_id]["suppression_expired"] = false;
-                }
-                result[violator_id].violations[rule_id]["suppressed"] = false;
-            }
-        }
-    }
- 
-    var rtn = result;
+  const violations = json_input.violations;
+  const result = {};
+  let file_date = null;
+  const regionKeys = Object.keys(violations);
+  regionKeys.forEach(region => {
+      result[region] = {};
+      const violationKeys = Object.keys(violations[region]);
+      violationKeys.forEach(violator_id => {
+          result[region][violator_id] = {};
+          result[region][violator_id].tags = violations[region][violator_id].tags;
+          result[region][violator_id].violations = {};
+          const ruleKeys = Object.keys(violations[region][violator_id].violations);
+          ruleKeys.forEach(rule_id => {
+              let is_violation = true;
+              result[region][violator_id].violations[rule_id] = violations[region][violator_id].violations[rule_id];
+              const suppressionRuleKeys = Object.keys(suppression);
+              suppressionRuleKeys.forEach(suppress_rule_id => {
+                  const suppressionViolatorNum = Object.keys(suppression[suppress_rule_id]);
+                  suppressionViolatorNum.forEach(suppress_violator_num => {
+                      const suppressViolatorIdKeys = Object.keys(suppression[suppress_rule_id][suppress_violator_num]);
+                      suppressViolatorIdKeys.forEach(suppress_violator_id => {
+                          file_date = null;
+                          let suppress_obj_id_time = suppression[suppress_rule_id][suppress_violator_num][suppress_violator_id];
+                          if (rule_id === suppress_rule_id) {
   
-  var rtn = result;
+                              if (violator_id === suppress_violator_id) {
+                                  const now_date = new Date();
+  
+                                  if (suppress_obj_id_time === "") {
+                                      suppress_obj_id_time = new Date();
+                                  } else {
+                                      file_date = suppress_obj_id_time;
+                                      suppress_obj_id_time = file_date;
+                                  }
+                                  let rule_date = new Date(suppress_obj_id_time);
+                                  if (isNaN(rule_date.getTime())) {
+                                      rule_date = new Date(0);
+                                  }
+  
+                                  if (now_date <= rule_date) {
+  
+                                      is_violation = false;
+  
+                                      result[region][violator_id].violations[rule_id]["suppressed"] = true;
+                                      if (file_date != null) {
+                                          result[region][violator_id].violations[rule_id]["suppressed_until"] = file_date;
+                                          result[region][violator_id].violations[rule_id]["suppression_expired"] = false;
+                                      }
+                                  }
+                              }
+                          }
+                      });
+                  });
+              });
+              if (is_violation) {
+  
+                  if (file_date !== null) {
+                      result[region][violator_id].violations[rule_id]["suppressed_until"] = file_date;
+                      result[region][violator_id].violations[rule_id]["suppression_expired"] = true;
+                  } else {
+                      result[region][violator_id].violations[rule_id]["suppression_expired"] = false;
+                  }
+                  result[region][violator_id].violations[rule_id]["suppressed"] = false;
+              }
+          });
+      });
+  });
   
   callback(result);
   EOH
@@ -153,7 +156,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.6.4"
+                   :version => "1.7.0"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -199,8 +202,6 @@ const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2-samples';
-const TABLES = json_input['table'];
 const SHOWN_NOT_SORTED_VIOLATIONS_COUNTER = true;
 
 
@@ -209,29 +210,30 @@ const EC2_LOGIC_LENGTH = setTagsLengthFromEc2Logic("${AUDIT_AWS_EC2_ATK_TAG_LOGI
 
 
 const sortFuncForViolationAuditPanel = function sortViolationFunc(JSON_INPUT) {
-    let violations = JSON_INPUT.violations;
+    let regions = JSON_INPUT['violations'];
     let counterForViolations = 0;
     let counterForSortedViolations = 0;
-    if (violations.hasOwnProperty('violations')) {
-        violations = JSON_INPUT.violations.violations;
-    }
-    const violationKeys = Object.keys(violations);
-    violationKeys.forEach(violationKey => {
-        const alertKeys = Object.keys(violations[violationKey].violations);
-        const tags = violations[violationKey].tags;
-        const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
-        alertKeys.forEach(alertKey => {
-            if(similarNumber >= EC2_LOGIC_LENGTH) {
-                delete violations[violationKey].violations[alertKey];
-                counterForSortedViolations--;
-                if (Object.keys(violations[violationKey].violations).length === 0) {
-                    delete violations[violationKey];
-                }
-            }
-            counterForViolations++;
-            counterForSortedViolations++;
-        });
+    const regionKeys = Object.keys(regions);
+    regionKeys.forEach(regionKey => {
+      const violationKeys = Object.keys(regions[regionKey]);
+      violationKeys.forEach(violationKey => {
+          const alertKeys = Object.keys(regions[regionKey][violationKey].violations);
+          const tags = regions[regionKey][violationKey].tags;
+          const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
+          alertKeys.forEach(alertKey => {
+              if(similarNumber >= EC2_LOGIC_LENGTH) {
+                  delete regions[regionKey][violationKey]['violations'][alertKey];
+                  counterForSortedViolations--;
+                  if (Object.keys(regions[regionKey][violationKey]['violations']).length === 0) {
+                      delete regions[regionKey][violationKey];
+                  }
+              }
+              counterForViolations++;
+              counterForSortedViolations++;
+          });
+      });
     });
+      
 
     JSON_INPUT['counterForViolations'] = counterForViolations.toString();
     JSON_INPUT['counterForSortedViolations'] = counterForSortedViolations.toString();
@@ -240,28 +242,28 @@ const sortFuncForViolationAuditPanel = function sortViolationFunc(JSON_INPUT) {
 };
 
 const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
-    let violations = JSON_INPUT.violations;
+    let regions = JSON_INPUT['violations'];
     let counterForViolations = 0;
     let counterForSortedViolations = 0;
-    if (violations.hasOwnProperty('violations')) {
-        violations = JSON_INPUT.violations.violations;
-    }
-    const violationKeys = Object.keys(violations);
-    violationKeys.forEach(violationKey => {
-        const alertKeys = Object.keys(violations[violationKey].violations);
-        const tags = violations[violationKey].tags;
-        const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
-        alertKeys.forEach(alertKey => {
-            if(similarNumber >= EC2_LOGIC_LENGTH) {
-                delete violations[violationKey].violations[alertKey];
-                counterForSortedViolations--;
-                if (Object.keys(violations[violationKey].violations).length === 0) {
-                    delete violations[violationKey];
-                }
-            }
-            counterForViolations++;
-            counterForSortedViolations++;
-        });
+    const regionKeys = Object.keys(regions);
+    regionKeys.forEach(regionKey => {
+      const violationKeys = Object.keys(regions[regionKey]);
+      violationKeys.forEach(violationKey => {
+          const alertKeys = Object.keys(regions[regionKey][violationKey].violations);
+          const tags = regions[regionKey][violationKey].tags;
+          const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
+          alertKeys.forEach(alertKey => {
+              if(similarNumber >= EC2_LOGIC_LENGTH) {
+                  delete regions[regionKey][violationKey]['violations'][alertKey];
+                  counterForSortedViolations--;
+                  if (Object.keys(regions[regionKey][violationKey]['violations']).length === 0) {
+                      delete regions[regionKey][violationKey];
+                  }
+              }
+              counterForViolations++;
+              counterForSortedViolations++;
+          });
+      });
     });
     JSON_INPUT['counterForViolations'] = counterForViolations;
     JSON_INPUT['counterForSortedViolations'] = counterForSortedViolations;
@@ -269,21 +271,13 @@ const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
     return JSON_INPUT;
 };
 
-const WHAT_NEED_TO_SHOWN_ON_TABLE = {
-    OBJECT_ID: { headerName: 'AWS Object ID', isShown: true},
-    REGION: { headerName: 'Region', isShown: true },
-    AWS_CONSOLE: { headerName: 'AWS Console', isShown: true },
-    TAGS: { headerName: 'Tags', isShown: true },
-    AMI: { headerName: 'AMI', isShown: false },
-    KILL_SCRIPTS: { headerName: 'Kill Cmd', isShown: false }
-};
-
-const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, AUDIT_NAME,
-    WHAT_NEED_TO_SHOWN_ON_TABLE, ALLOW_EMPTY, SEND_ON,
-    sortFuncForViolationAuditPanel, sortFuncForHTMLReport, SHOWN_NOT_SORTED_VIOLATIONS_COUNTER};
+const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, 
+    ALLOW_EMPTY, SEND_ON,
+    SHOWN_NOT_SORTED_VIOLATIONS_COUNTER,
+    sortFuncForViolationAuditPanel, sortFuncForHTMLReport,};
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES, TABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 callback(notifiers);
@@ -344,7 +338,7 @@ coreo_uni_util_jsrunner "ec2-runner-advise-no-tags-older-than-kill-all-script" d
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.6.1"
+                   :version => "1.7.0"
                }       ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
@@ -390,8 +384,6 @@ const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
 const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
 const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
 const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
-const AUDIT_NAME = 'ec2-samples';
-const TABLES = json_input['table'];
 const SHOWN_NOT_SORTED_VIOLATIONS_COUNTER = true;
 
 
@@ -400,29 +392,30 @@ const EC2_LOGIC_LENGTH = setTagsLengthFromEc2Logic("${AUDIT_AWS_EC2_ATK_TAG_LOGI
 
 
 const sortFuncForViolationAuditPanel = function sortViolationFunc(JSON_INPUT) {
-    let violations = JSON_INPUT.violations;
+    let regions = JSON_INPUT['violations'];
     let counterForViolations = 0;
     let counterForSortedViolations = 0;
-    if (violations.hasOwnProperty('violations')) {
-        violations = JSON_INPUT.violations.violations;
-    }
-    const violationKeys = Object.keys(violations);
-    violationKeys.forEach(violationKey => {
-        const alertKeys = Object.keys(violations[violationKey].violations);
-        const tags = violations[violationKey].tags;
-        const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
-        alertKeys.forEach(alertKey => {
-            if(similarNumber >= EC2_LOGIC_LENGTH) {
-                delete violations[violationKey].violations[alertKey];
-                counterForSortedViolations--;
-                if (Object.keys(violations[violationKey].violations).length === 0) {
-                    delete violations[violationKey];
-                }
-            }
-            counterForViolations++;
-            counterForSortedViolations++;
-        });
+    const regionKeys = Object.keys(regions);
+    regionKeys.forEach(regionKey => {
+      const violationKeys = Object.keys(regions[regionKey]);
+      violationKeys.forEach(violationKey => {
+          const alertKeys = Object.keys(regions[regionKey][violationKey].violations);
+          const tags = regions[regionKey][violationKey].tags;
+          const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
+          alertKeys.forEach(alertKey => {
+              if(similarNumber >= EC2_LOGIC_LENGTH) {
+                  delete regions[regionKey][violationKey]['violations'][alertKey];
+                  counterForSortedViolations--;
+                  if (Object.keys(regions[regionKey][violationKey]['violations']).length === 0) {
+                      delete regions[regionKey][violationKey];
+                  }
+              }
+              counterForViolations++;
+              counterForSortedViolations++;
+          });
+      });
     });
+      
 
     JSON_INPUT['counterForViolations'] = counterForViolations.toString();
     JSON_INPUT['counterForSortedViolations'] = counterForSortedViolations.toString();
@@ -431,28 +424,28 @@ const sortFuncForViolationAuditPanel = function sortViolationFunc(JSON_INPUT) {
 };
 
 const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
-    let violations = JSON_INPUT.violations;
+    let regions = JSON_INPUT['violations'];
     let counterForViolations = 0;
     let counterForSortedViolations = 0;
-    if (violations.hasOwnProperty('violations')) {
-        violations = JSON_INPUT.violations.violations;
-    }
-    const violationKeys = Object.keys(violations);
-    violationKeys.forEach(violationKey => {
-        const alertKeys = Object.keys(violations[violationKey].violations);
-        const tags = violations[violationKey].tags;
-        const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
-        alertKeys.forEach(alertKey => {
-            if(similarNumber >= EC2_LOGIC_LENGTH) {
-                delete violations[violationKey].violations[alertKey];
-                counterForSortedViolations--;
-                if (Object.keys(violations[violationKey].violations).length === 0) {
-                    delete violations[violationKey];
-                }
-            }
-            counterForViolations++;
-            counterForSortedViolations++;
-        });
+    const regionKeys = Object.keys(regions);
+    regionKeys.forEach(regionKey => {
+      const violationKeys = Object.keys(regions[regionKey]);
+      violationKeys.forEach(violationKey => {
+          const alertKeys = Object.keys(regions[regionKey][violationKey].violations);
+          const tags = regions[regionKey][violationKey].tags;
+          const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
+          alertKeys.forEach(alertKey => {
+              if(similarNumber >= EC2_LOGIC_LENGTH) {
+                  delete regions[regionKey][violationKey]['violations'][alertKey];
+                  counterForSortedViolations--;
+                  if (Object.keys(regions[regionKey][violationKey]['violations']).length === 0) {
+                      delete regions[regionKey][violationKey];
+                  }
+              }
+              counterForViolations++;
+              counterForSortedViolations++;
+          });
+      });
     });
     JSON_INPUT['counterForViolations'] = counterForViolations;
     JSON_INPUT['counterForSortedViolations'] = counterForSortedViolations;
@@ -460,21 +453,13 @@ const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
     return JSON_INPUT;
 };
 
-const WHAT_NEED_TO_SHOWN_ON_TABLE = {
-    OBJECT_ID: { headerName: 'AWS Object ID', isShown: true},
-    REGION: { headerName: 'Region', isShown: true },
-    AWS_CONSOLE: { headerName: 'AWS Console', isShown: true },
-    TAGS: { headerName: 'Tags', isShown: true },
-    AMI: { headerName: 'AMI', isShown: false },
-    KILL_SCRIPTS: { headerName: 'Kill Cmd', isShown: false }
-};
-
-const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, AUDIT_NAME,
-    WHAT_NEED_TO_SHOWN_ON_TABLE, ALLOW_EMPTY, SEND_ON,
-    sortFuncForViolationAuditPanel, sortFuncForHTMLReport, SHOWN_NOT_SORTED_VIOLATIONS_COUNTER};
+const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, 
+    ALLOW_EMPTY, SEND_ON,
+    SHOWN_NOT_SORTED_VIOLATIONS_COUNTER,
+    sortFuncForViolationAuditPanel, sortFuncForHTMLReport,};
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
-const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES, TABLES);
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts(); 
 callback(HTMLKillScripts)
   EOH
