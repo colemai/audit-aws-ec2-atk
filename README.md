@@ -45,7 +45,7 @@ This repo is designed to work with CloudCoreo.
 
 ### `AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS`:
   * description: Would you like to send a full EC2 Alert-to-Kill report? This is an email that details any violations found and includes a list of the violating cloud objects. Options - notify / nothing. Default is notify.
-  * default: notify
+  * default: nothing
 
 ### `AUDIT_AWS_EC2_ATK_REGIONS`:
   * description: List of AWS regions to check. Default is us-east-1,us-east-2,us-west-1,us-west-2,eu-west-1.

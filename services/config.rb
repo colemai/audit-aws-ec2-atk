@@ -6,7 +6,7 @@
 # this set will be post-processed by the jsrunner below to examine the tags - nothing is directly
 # alerted on from this definition
 #
-coreo_aws_advisor_alert "ec2-get-all-instances-older-than" do
+coreo_aws_rule "ec2-get-all-instances-older-than" do
   action :define
   service :ec2
   link "http://kb.cloudcoreo.com/mydoc_ec2-alert-to-kill.html"
@@ -18,7 +18,7 @@ coreo_aws_advisor_alert "ec2-get-all-instances-older-than" do
   objectives ["instances"]
   audit_objects ["reservation_set.instances_set.launch_time"]
   operators ["<"]
-  alert_when ["5.minutes.ago"]
+  raise_when ["5.minutes.ago"]
   id_map "object.reservation_set.instances_set.instance_id"
 end
 
@@ -29,9 +29,9 @@ end
 
 # this resource simply executes the alert that was defined above
 #
-coreo_aws_advisor_ec2 "advise-ec2-atk" do
-  alerts ["ec2-get-all-instances-older-than"]
-  action :advise
+coreo_aws_rule_runner_ec2 "advise-ec2-atk" do
+  rules ["ec2-get-all-instances-older-than"]
+  action :run
   regions ${AUDIT_AWS_EC2_ATK_REGIONS}
 end
 
@@ -39,7 +39,7 @@ end
 coreo_uni_util_jsrunner "jsrunner-process-suppression" do
   action :run
   provide_composite_access true
-  json_input '{"violations":COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
+  json_input '{"violations":COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report}'
   packages([
                {
                    :name => "js-yaml",
@@ -129,7 +129,7 @@ end
 coreo_uni_util_jsrunner "jsrunner-process-table" do
   action :run
   provide_composite_access true
-  json_input '{"violations":COMPOSITE::coreo_aws_advisor_ec2.advise-ec2-atk.report}'
+  json_input '{"violations":COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report}'
   packages([
                {
                    :name => "js-yaml",
@@ -328,7 +328,7 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   '
   payload_type 'text'
   endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2 advisor alerts on PLAN::stack_name :: PLAN::name'
+      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2 rule results on PLAN::stack_name :: PLAN::name'
   })
 end
 
