@@ -465,6 +465,13 @@ callback(HTMLKillScripts)
   EOH
 end
 
+coreo_uni_util_variables "update-rule-runner" do
+  action :set
+  variables([
+                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.return'}
+            ])
+end
+
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
   type 'email'
