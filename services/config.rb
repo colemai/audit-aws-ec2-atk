@@ -284,13 +284,6 @@ callback(notifiers);
   EOH
 end
 
-coreo_uni_util_variables "update-rule-runner" do
-  action :set
-  variables([
-                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
-            ])
-end
-
 # Send ec2-atk for email
 coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
@@ -470,6 +463,13 @@ const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts(); 
 callback(HTMLKillScripts)
   EOH
+end
+
+coreo_uni_util_variables "update-report" do
+  action :set
+  variables([
+                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.return'}
+            ])
 end
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
