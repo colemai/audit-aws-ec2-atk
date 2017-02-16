@@ -308,7 +308,7 @@ const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
-coreoExport('violations', AuditEC2ATK.getJSONForAuditPanel);
+coreoExport('violations', violations);
 callback(notifiers);
   EOH
 end
