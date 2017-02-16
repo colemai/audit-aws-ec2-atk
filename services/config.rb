@@ -44,49 +44,52 @@ end
 coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   action :run
   data_type "json"
+  provide_composite_access true
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.7.0"
-               }       ])
+                   :version => "1.8.3"
+               },
+               {
+                   :name => "js-yaml",
+                   :version => "3.7.0"
+               }      ])
   json_input '{ "composite name":"PLAN::stack_name",
                 "plan name":"PLAN::name",
-                "table": COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-table.return,
-                "violations": COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-suppression.return}'
+                "violations": COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report}'
   function <<-EOH
   
-function setTagsLengthFromEc2Logic(EC2_LOGIC, EXPECTED_TAGS) {
-    let tagLength = EXPECTED_TAGS.length;
-    if(EC2_LOGIC === 'or') {
-        tagLength = 1;
-    }
-    return tagLength;
+
+function setTableAndSuppression() {
+  let table;
+  let suppression;
+
+  const fs = require('fs');
+  const yaml = require('js-yaml');
+  try {
+      suppression = yaml.safeLoad(fs.readFileSync('./suppression.yaml', 'utf8'));
+  } catch (e) {
+      console.log("Error reading suppression.yaml file: " , e);
+      suppression = {};
+  }
+  try {
+      table = yaml.safeLoad(fs.readFileSync('./table.yaml', 'utf8'));
+  } catch (e) {
+      console.log("Error reading table.yaml file: ", e);
+      table = {};
+  }
+  coreoExport('table', JSON.stringify(table));
+  coreoExport('suppression', JSON.stringify(suppression));
+  
+  let alertListToJSON = "["ec2-get-all-instances-older-than"]";
+  let alertListArray = alertListToJSON.replace(/'/g, '"');
+  json_input['alert list'] = alertListArray || [];
+  json_input['suppression'] = suppression || [];
+  json_input['table'] = table || {};
 }
 
-function getSimilarNumber(tags, EXPECTED_TAGS) {
-    let similarNumber = 0;
-    EXPECTED_TAGS.forEach(EXPECTED_TAG => {
-        EXPECTED_TAG = EXPECTED_TAG.toLowerCase();
-        tags.forEach(tagElem => {
-            if(tagElem.hasOwnProperty('tag')) {
-                const tagToLowerCase = tagElem.tag['key'].toLowerCase();
-                if(tagToLowerCase == EXPECTED_TAG) {
-                    similarNumber++;
-                }
-            } else {
-                const tagToLowerCase = tagElem['key'].toLowerCase();
-                if(tagToLowerCase == EXPECTED_TAG) {
-                    similarNumber++;
-                }
-            }
-        });
-    });
-    console.log(similarNumber);
-    if(EXPECTED_TAGS.length === 0) {
-        similarNumber = 0;
-    }
-    return similarNumber;
-}
+
+setTableAndSuppression();
 
 const JSON_INPUT = json_input;
 const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
@@ -175,7 +178,7 @@ callback(notifiers);
   EOH
 end
 
-coreo_uni_util_variables "update-planwide-3" do
+coreo_uni_util_variables "update-planwide-2" do
   action :set
   variables([
                 {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.JSONReport'},
