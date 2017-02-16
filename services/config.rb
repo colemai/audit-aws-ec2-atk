@@ -126,6 +126,14 @@ coreo_uni_util_jsrunner "jsrunner-process-suppression" do
   EOH
 end
 
+
+coreo_uni_util_variables "update-rule-runner" do
+  action :set
+  variables([
+                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-suppression.return'}
+            ])
+end
+
 coreo_uni_util_jsrunner "jsrunner-process-table" do
   action :run
   provide_composite_access true
@@ -282,13 +290,6 @@ const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 callback(notifiers);
   EOH
-end
-
-coreo_uni_util_variables "update-rule-runner" do
-  action :set
-  variables([
-                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
-            ])
 end
 
 # Send ec2-atk for email
