@@ -28,13 +28,31 @@ end
 ###########################################
 
 # this resource simply executes the alert that was defined above
-#
+
+# coreo_uni_util_variables "planwide" do
+#   action :set
+#   variables([
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.composite_name' => 'PLAN::stack_name'},
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.plan_name' => 'PLAN::name'},
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'unset'},
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.number_violations' => 'unset'}
+#             ])
+# end
+
 coreo_aws_rule_runner_ec2 "advise-ec2-atk" do
   rules ["ec2-get-all-instances-older-than"]
   action :run
   regions ${AUDIT_AWS_EC2_ATK_REGIONS}
 end
 
+# coreo_uni_util_variables "update-planwide-1" do
+#   action :set
+#   variables([
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_aws_rule_runner_ec2.advise-cloudtrail.report'},
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.number_violations' => 'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.number_violations'},
+
+#             ])
+# end
 
 coreo_uni_util_jsrunner "jsrunner-process-suppression" do
   action :run
@@ -126,12 +144,15 @@ coreo_uni_util_jsrunner "jsrunner-process-suppression" do
   EOH
 end
 
-coreo_uni_util_variables "update-rule-runner" do
-   action :set
-   variables([
-                 {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-suppression.return'}
-             ])
- end
+# coreo_uni_util_variables "update-planwide-2" do
+#   action :set
+#   variables([
+#                 {'COMPOSITE::coreo_aws_rule_runner_cloudtrail.advise-cloudtrail.report' => 'COMPOSITE::coreo_uni_util_jsrunner.cloudtrail-aggregate.return'},
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_uni_util_jsrunner.cloudtrail-aggregate.return'},
+#                 {'COMPOSITE::coreo_uni_util_variables.planwide.number_violations' => 'COMPOSITE::coreo_uni_util_jsrunner.cloudtrail-aggregate.violation_counter'}
+#             ])
+# end
+
 
 coreo_uni_util_jsrunner "jsrunner-process-table" do
   action :run
@@ -153,6 +174,13 @@ coreo_uni_util_jsrunner "jsrunner-process-table" do
     callback(table);
   EOH
 end
+
+coreo_uni_util_variables "update-rule-runner" do
+   action :set
+   variables([
+                 {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-table.return'}
+             ])
+ end
 
 
 # this is doing the owner tag parsing only - it needs to also include the kill tag logic (and/or)
