@@ -60,6 +60,40 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   function <<-EOH
   
 
+function setTagsLengthFromEc2Logic(EC2_LOGIC, EXPECTED_TAGS) {
+    let tagLength = EXPECTED_TAGS.length;
+    if(EC2_LOGIC === 'or') {
+        tagLength = 1;
+    }
+    return tagLength;
+}
+
+function getSimilarNumber(tags, EXPECTED_TAGS) {
+    let similarNumber = 0;
+    EXPECTED_TAGS.forEach(EXPECTED_TAG => {
+        EXPECTED_TAG = EXPECTED_TAG.toLowerCase();
+        tags.forEach(tagElem => {
+            if(tagElem.hasOwnProperty('tag')) {
+                const tagToLowerCase = tagElem.tag['key'].toLowerCase();
+                if(tagToLowerCase == EXPECTED_TAG) {
+                    similarNumber++;
+                }
+            } else {
+                const tagToLowerCase = tagElem['key'].toLowerCase();
+                if(tagToLowerCase == EXPECTED_TAG) {
+                    similarNumber++;
+                }
+            }
+        });
+    });
+    console.log(similarNumber);
+    if(EXPECTED_TAGS.length === 0) {
+        similarNumber = 0;
+    }
+    return similarNumber;
+}
+
+
 function setTableAndSuppression() {
   let table;
   let suppression;
