@@ -189,8 +189,57 @@ end
 
 
 
+
+coreo_uni_util_variables "update-planwide-2" do
+  action :set
+  variables([
+                {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.JSONReport'},
+                {'COMPOSITE::coreo_uni_util_variables.planwide.table' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.table'}
+            ])
+end
+
+
+coreo_uni_util_jsrunner "tags-rollup" do
+  action :run
+  data_type "text"
+  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
+  function <<-EOH
+
+const notifiers = json_input;
+
+function setTextRollup() {
+    let emailText = '';
+    let numberOfViolations = 0;
+    notifiers.forEach(notifier => {
+        const hasEmail = notifier['endpoint']['to'].length;
+        if(hasEmail) {
+            numberOfViolations += parseInt(notifier['num_violations']);
+            emailText += "recipient: " + notifier['endpoint']['to'] + " - " + "Violations: " + notifier['num_violations'] + "\\n";
+        }
+    });
+
+    textRollup += 'Number of Violating Cloud Objects: ' + numberOfViolations + "\\n";
+    textRollup += 'Rollup' + "\\n";
+    textRollup += emailText;
+}
+
+
+let textRollup = '';
+setTextRollup();
+
+callback(textRollup);
+  EOH
+end
+
+coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
+  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0)) ? :notify : :nothing)
+  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
+end
+
+
+
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
+  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and ("${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}".eql?("notify"))) ? :notify : :nothing)
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
@@ -202,47 +251,8 @@ coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
 end
 
 
-coreo_uni_util_variables "update-planwide-2" do
-  action :set
-  variables([
-                {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.JSONReport'},
-                {'COMPOSITE::coreo_uni_util_variables.planwide.table' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.table'}
-            ])
-end
-
-coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
-  action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
-  notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
-end
-
-coreo_uni_util_jsrunner "tags-rollup" do
-  action :run
-  data_type "text"
-  json_input 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
-  function <<-EOH
-var rollup_string = "";
-let emailText = '';
-let numberOfViolations = 0;
-let numberOfInstances = 0;
-for (var entry=0; entry < json_input.length; entry++) {
-    if (json_input[entry]['endpoint']['to'].length) {
-        numberOfInstances += parseInt(json_input[entry]['num_instances']);
-        numberOfViolations += parseInt(json_input[entry]['num_violations']);
-        emailText += "recipient: " + json_input[entry]['endpoint']['to'] + " - " + 'Violations: ' + json_input[entry]['num_violations'] + "\\n";
-    }
-}
-
-let rollup = 'number of Instances: ' + numberOfInstances + "\\n";
-rollup += 'number of Violations: ' + numberOfViolations + "\\n";
-rollup += emailText;
-
-rollup_string = rollup;
-callback(rollup_string);
-  EOH
-end
-
 coreo_uni_util_notify "advise-atk-rollup" do
-  action :${AUDIT_AWS_EC2_ATK_ROLLUP_REPORT}
+  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and (! "${AUDIT_AWS_EC2_ATK_OWNER_TAG}".eql?("NOT_A_TAG"))) ? :notify : :nothing)
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
@@ -256,3 +266,4 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
       :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'CloudCoreo ec2 rule results on PLAN::stack_name :: PLAN::name'
   })
 end
+
