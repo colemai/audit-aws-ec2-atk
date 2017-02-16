@@ -81,7 +81,7 @@ function setTableAndSuppression() {
   coreoExport('table', JSON.stringify(table));
   coreoExport('suppression', JSON.stringify(suppression));
   
-  let alertListToJSON = "["ec2-get-all-instances-older-than"]";
+  let alertListToJSON = "['ec2-get-all-instances-older-than']";
   let alertListArray = alertListToJSON.replace(/'/g, '"');
   json_input['alert list'] = alertListArray || [];
   json_input['suppression'] = suppression || [];
