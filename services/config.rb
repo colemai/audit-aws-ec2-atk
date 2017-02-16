@@ -208,7 +208,7 @@ const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 
 
-const JSONReportAfterGeneratingSuppression = AuditEC2ATK.getJSONForAuditPanel();
+const JSONReportAfterGeneratingSuppression = AuditEC2ATK.getJSONForHTMLReports();
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 
 coreoExport('JSONReport', JSON.stringify(JSONReportAfterGeneratingSuppression));
