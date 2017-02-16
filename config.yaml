@@ -24,16 +24,6 @@ variables:
     required: false
     type: string
     default:
-  AUDIT_AWS_EC2_ATK_HTML_REPORT:
-    description: "Would you like to send the AWS owner tag report(s)? Options - notify / nothing. Default is nothing."
-    required: true
-    type: string
-    default: "nothing"
-  AUDIT_AWS_EC2_ATK_ROLLUP_REPORT:
-    description: "Would you like to send a rollup EC2 Alert-to-Kill report? This is a short email that summarizes the number of checks performed and the number of violations found. Options - notify / nothing. Default is nothing."
-    required: true
-    type: string
-    default: "nothing"
   AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS:
     description: "Would you like to send a full EC2 Alert-to-Kill report? This is an email that details any violations found and includes a list of the violating cloud objects. Options - notify / nothing. Default is notify."
     required: true
