@@ -468,7 +468,7 @@ end
 coreo_uni_util_variables "update-rule-runner" do
    action :set
    variables([
-                 {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.json_input.violations'}
+                 {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.ec2-runner-advise-no-tags-older-than-kill-all-script.return.json_input.violations'}
              ])
  end
 
