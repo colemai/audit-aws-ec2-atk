@@ -126,14 +126,6 @@ coreo_uni_util_jsrunner "jsrunner-process-suppression" do
   EOH
 end
 
-
-coreo_uni_util_variables "update-rule-runner" do
-  action :set
-  variables([
-                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.jsrunner-process-suppression.return'}
-            ])
-end
-
 coreo_uni_util_jsrunner "jsrunner-process-table" do
   action :run
   provide_composite_access true
@@ -292,6 +284,13 @@ callback(notifiers);
   EOH
 end
 
+coreo_uni_util_variables "update-rule-runner" do
+  action :set
+  variables([
+                {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'}
+            ])
+end
+
 # Send ec2-atk for email
 coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   action :${AUDIT_AWS_EC2_ATK_HTML_REPORT}
@@ -323,6 +322,8 @@ rollup_string = rollup;
 callback(rollup_string);
   EOH
 end
+
+
 
 coreo_uni_util_notify "advise-atk-rollup" do
   action :${AUDIT_AWS_EC2_ATK_ROLLUP_REPORT}
@@ -472,6 +473,8 @@ const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 callback(HTMLKillScripts)
   EOH
 end
+
+
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   action :${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}
