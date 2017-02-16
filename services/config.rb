@@ -48,7 +48,7 @@ coreo_uni_util_jsrunner "tags-to-notifiers-array-ec2-atk" do
   packages([
                {
                    :name => "cloudcoreo-jsrunner-commons",
-                   :version => "1.8.3"
+                   :version => "1.8.4"
                },
                {
                    :name => "js-yaml",
@@ -202,7 +202,7 @@ const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
 const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, 
     ALLOW_EMPTY, SEND_ON,
     SHOWN_NOT_SORTED_VIOLATIONS_COUNTER,
-    sortFuncForViolationAuditPanel, sortFuncForHTMLReport,};
+    sortFuncForViolationAuditPanel, sortFuncForHTMLReport};
 
 const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
