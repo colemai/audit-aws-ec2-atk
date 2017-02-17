@@ -458,7 +458,7 @@ callback(HTMLKillScripts);
 end
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action(("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) ? :notify : :nothing)
+  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0)) ? :notify : :nothing)
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
