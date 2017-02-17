@@ -266,8 +266,6 @@ coreo_uni_util_notify "advise-ec2-atk-to-tag-values" do
   notifiers 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.return'
 end
 
-
-
 coreo_uni_util_notify "advise-atk-rollup" do
   action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and (! "${AUDIT_AWS_EC2_ATK_OWNER_TAG}".eql?("NOT_A_TAG"))) ? :notify : :nothing)
   type 'email'
@@ -452,17 +450,12 @@ const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 
 
 
-const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
+const HTMLKillScripts = JSON.parse(AuditEC2ATK.getHTMLKillScripts());
 
 
 callback(HTMLKillScripts);
   EOH
 end
-
-
-
-
-
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
   action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and ("${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}".eql?("notify"))) ? :notify : :nothing)
