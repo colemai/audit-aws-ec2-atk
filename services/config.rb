@@ -450,7 +450,7 @@ const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 
 
 
-const HTMLKillScripts = JSON.parse(AuditEC2ATK.getHTMLKillScripts());
+const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 
 
 callback(HTMLKillScripts);
