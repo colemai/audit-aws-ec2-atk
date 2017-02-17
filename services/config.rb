@@ -284,7 +284,7 @@ end
 
 coreo_uni_util_jsrunner "tags-to-notifiers-array-kill-scripts" do
   action :run
-  data_type "json"
+  data_type "text"
   provide_composite_access true
   packages([
                {
