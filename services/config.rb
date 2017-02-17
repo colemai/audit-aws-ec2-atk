@@ -212,7 +212,7 @@ const JSONReportAfterGeneratingSuppression = AuditEC2ATK.getJSONForHTMLReports()
 const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
 
 coreoExport('JSONReport', JSON.stringify(JSONReportAfterGeneratingSuppression));
-coreoExport('HTMLKillScripts', JSON.stringify(HTMLKillScripts));
+coreoExport('HTMLKillScripts', HTMLKillScripts);
 
 
 const notifiers = AuditEC2ATK.getNotifiers();
@@ -221,9 +221,6 @@ callback(notifiers);
   EOH
 end
 
-
-
-
 coreo_uni_util_variables "update-planwide-2" do
   action :set
   variables([
@@ -231,7 +228,6 @@ coreo_uni_util_variables "update-planwide-2" do
                 {'COMPOSITE::coreo_uni_util_variables.planwide.table' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.table'}
             ])
 end
-
 
 coreo_uni_util_jsrunner "tags-rollup" do
   action :run
