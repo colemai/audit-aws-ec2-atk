@@ -309,7 +309,7 @@ const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
 const inhalations = JSON.stringify(violations.violations)
-coreoExport('violations', inhalations);
+coreoExport('violations', JSON_INPUT['violations']);
 callback(notifiers);
   EOH
 end
