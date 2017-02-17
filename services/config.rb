@@ -15,13 +15,13 @@ coreo_aws_rule "ec2-get-all-instances-older-than" do
 end
 
 
-coreo_uni_util_variables "planwide" do
+coreo_uni_util_variables "atk-planwide" do
   action :set
   variables([
-                {'COMPOSITE::coreo_uni_util_variables.planwide.composite_name' => 'PLAN::stack_name'},
-                {'COMPOSITE::coreo_uni_util_variables.planwide.plan_name' => 'PLAN::name'},
-                {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'unset'},
-                {'COMPOSITE::coreo_uni_util_variables.planwide.number_violations' => 'unset'}
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.composite_name' => 'PLAN::stack_name'},
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.plan_name' => 'PLAN::name'},
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.results' => 'unset'},
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.number_violations' => 'unset'}
             ])
 end
 
@@ -32,11 +32,11 @@ coreo_aws_rule_runner_ec2 "advise-ec2-atk" do
 end
 
 
-coreo_uni_util_variables "update-planwide-1" do
+coreo_uni_util_variables "atk-update-planwide-1" do
   action :set
   variables([
-                {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report'},
-                {'COMPOSITE::coreo_uni_util_variables.planwide.number_violations' => 'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.number_violations'},
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.results' => 'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report'},
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.number_violations' => 'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.number_violations'},
 
             ])
 end
@@ -221,11 +221,11 @@ callback(notifiers);
   EOH
 end
 
-coreo_uni_util_variables "update-planwide-2" do
+coreo_uni_util_variables "atk-update-planwide-2" do
   action :set
   variables([
-                {'COMPOSITE::coreo_uni_util_variables.planwide.results' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.JSONReport'},
-                {'COMPOSITE::coreo_uni_util_variables.planwide.table' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.table'}
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.results' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.JSONReport'},
+                {'COMPOSITE::coreo_uni_util_variables.atk-planwide.table' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.table'}
             ])
 end
 
@@ -458,7 +458,7 @@ callback(HTMLKillScripts);
 end
 
 coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and ("${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}".eql?("notify"))) ? :notify : :nothing)
+  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) ? :notify : :nothing)
   type 'email'
   allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
   send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
