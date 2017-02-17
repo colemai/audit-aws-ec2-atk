@@ -268,19 +268,6 @@ end
 
 
 
-coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
-  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and ("${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}".eql?("notify"))) ? :notify : :nothing)
-  type 'email'
-  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
-  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
-  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.HTMLKillScripts'
-  payload_type "html"
-  endpoint ({
-      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
-  })
-end
-
-
 coreo_uni_util_notify "advise-atk-rollup" do
   action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and (! "${AUDIT_AWS_EC2_ATK_OWNER_TAG}".eql?("NOT_A_TAG"))) ? :notify : :nothing)
   type 'email'
@@ -297,3 +284,194 @@ COMPOSITE::coreo_uni_util_jsrunner.tags-rollup.return
   })
 end
 
+coreo_uni_util_jsrunner "tags-to-notifiers-array-kill-scripts" do
+  action :run
+  data_type "json"
+  provide_composite_access true
+  packages([
+               {
+                   :name => "cloudcoreo-jsrunner-commons",
+                   :version => "1.8.4"
+               },
+               {
+                   :name => "js-yaml",
+                   :version => "3.7.0"
+               }      ])
+  json_input '{ "composite name":"PLAN::stack_name",
+                "plan name":"PLAN::name",
+                "violations": COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report}'
+  function <<-EOH
+  
+
+function setTagsLengthFromEc2Logic(EC2_LOGIC, EXPECTED_TAGS) {
+    let tagLength = EXPECTED_TAGS.length;
+    if(EC2_LOGIC === 'or') {
+        tagLength = 1;
+    }
+    return tagLength;
+}
+
+function getSimilarNumber(tags, EXPECTED_TAGS) {
+    let similarNumber = 0;
+    EXPECTED_TAGS.forEach(EXPECTED_TAG => {
+        EXPECTED_TAG = EXPECTED_TAG.toLowerCase();
+        tags.forEach(tagElem => {
+            if(tagElem.hasOwnProperty('tag')) {
+                const tagToLowerCase = tagElem.tag['key'].toLowerCase();
+                if(tagToLowerCase == EXPECTED_TAG) {
+                    similarNumber++;
+                }
+            } else {
+                const tagToLowerCase = tagElem['key'].toLowerCase();
+                if(tagToLowerCase == EXPECTED_TAG) {
+                    similarNumber++;
+                }
+            }
+        });
+    });
+    console.log(similarNumber);
+    if(EXPECTED_TAGS.length === 0) {
+        similarNumber = 0;
+    }
+    return similarNumber;
+}
+
+
+function setTableAndSuppression() {
+  let table;
+  let suppression;
+
+  const fs = require('fs');
+  const yaml = require('js-yaml');
+  try {
+      suppression = yaml.safeLoad(fs.readFileSync('./suppression.yaml', 'utf8'));
+  } catch (e) {
+      console.log("Error reading suppression.yaml file: " , e);
+      suppression = {};
+  }
+  try {
+      table = yaml.safeLoad(fs.readFileSync('./table.yaml', 'utf8'));
+  } catch (e) {
+      console.log("Error reading table.yaml file: ", e);
+      table = {};
+  }
+  coreoExport('table', JSON.stringify(table));
+  coreoExport('suppression', JSON.stringify(suppression));
+  
+  let alertListToJSON = "['ec2-get-all-instances-older-than']";
+  let alertListArray = alertListToJSON.replace(/'/g, '"');
+  json_input['alert list'] = alertListArray || [];
+  json_input['suppression'] = suppression || [];
+  json_input['table'] = table || {};
+}
+
+
+setTableAndSuppression();
+
+const JSON_INPUT = json_input;
+const NO_OWNER_EMAIL = "${AUDIT_AWS_EC2_ATK_RECIPIENT}";
+const OWNER_TAG = "${AUDIT_AWS_EC2_ATK_OWNER_TAG}";
+const ALLOW_EMPTY = "${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}";
+const SEND_ON = "${AUDIT_AWS_EC2_ATK_SEND_ON}";
+const SHOWN_NOT_SORTED_VIOLATIONS_COUNTER = true;
+
+
+const EXPECTED_TAGS = [${AUDIT_AWS_EC2_ATK_EXPECTED_TAGS}];
+const EC2_LOGIC_LENGTH = setTagsLengthFromEc2Logic("${AUDIT_AWS_EC2_ATK_TAG_LOGIC}", EXPECTED_TAGS);
+
+
+const sortFuncForViolationAuditPanel = function sortViolationFunc(JSON_INPUT) {
+    let regions = JSON_INPUT['violations'];
+    let counterForViolations = 0;
+    let counterForSortedViolations = 0;
+    const regionKeys = Object.keys(regions);
+    regionKeys.forEach(regionKey => {
+      const violationKeys = Object.keys(regions[regionKey]);
+      violationKeys.forEach(violationKey => {
+          const alertKeys = Object.keys(regions[regionKey][violationKey].violations);
+          const tags = regions[regionKey][violationKey].tags;
+          const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
+          alertKeys.forEach(alertKey => {
+              if(similarNumber >= EC2_LOGIC_LENGTH) {
+                  delete regions[regionKey][violationKey]['violations'][alertKey];
+                  counterForSortedViolations--;
+                  if (Object.keys(regions[regionKey][violationKey]['violations']).length === 0) {
+                      delete regions[regionKey][violationKey];
+                  }
+              }
+              counterForViolations++;
+              counterForSortedViolations++;
+          });
+      });
+    });
+      
+
+    JSON_INPUT['counterForViolations'] = counterForViolations.toString();
+    JSON_INPUT['counterForSortedViolations'] = counterForSortedViolations.toString();
+    console.log(JSON_INPUT);
+    return JSON_INPUT;
+};
+
+const sortFuncForHTMLReport = function htmlSortFunc(JSON_INPUT) {
+    let regions = JSON_INPUT['violations'];
+    let counterForViolations = 0;
+    let counterForSortedViolations = 0;
+    const regionKeys = Object.keys(regions);
+    regionKeys.forEach(regionKey => {
+      const violationKeys = Object.keys(regions[regionKey]);
+      violationKeys.forEach(violationKey => {
+          const alertKeys = Object.keys(regions[regionKey][violationKey].violations);
+          const tags = regions[regionKey][violationKey].tags;
+          const similarNumber = getSimilarNumber(tags, EXPECTED_TAGS)
+          alertKeys.forEach(alertKey => {
+              if(similarNumber >= EC2_LOGIC_LENGTH) {
+                  delete regions[regionKey][violationKey]['violations'][alertKey];
+                  counterForSortedViolations--;
+                  if (Object.keys(regions[regionKey][violationKey]['violations']).length === 0) {
+                      delete regions[regionKey][violationKey];
+                  }
+              }
+              counterForViolations++;
+              counterForSortedViolations++;
+          });
+      });
+    });
+    JSON_INPUT['counterForViolations'] = counterForViolations;
+    JSON_INPUT['counterForSortedViolations'] = counterForSortedViolations;
+    console.log(JSON_INPUT);
+    return JSON_INPUT;
+};
+
+const VARIABLES = { NO_OWNER_EMAIL, OWNER_TAG, 
+    ALLOW_EMPTY, SEND_ON,
+    SHOWN_NOT_SORTED_VIOLATIONS_COUNTER,
+    sortFuncForViolationAuditPanel, sortFuncForHTMLReport};
+
+const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
+const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
+
+
+
+const HTMLKillScripts = AuditEC2ATK.getHTMLKillScripts();
+
+
+callback(HTMLKillScripts);
+  EOH
+end
+
+
+
+
+
+
+coreo_uni_util_notify "advise-ec2-notify-no-tags-older-than-kill-all-script" do
+  action((("${AUDIT_AWS_EC2_ATK_RECIPIENT}".length > 0) and ("${AUDIT_AWS_EC2_ATK_SHOWN_KILL_SCRIPTS}".eql?("notify"))) ? :notify : :nothing)
+  type 'email'
+  allow_empty ${AUDIT_AWS_EC2_ATK_ALLOW_EMPTY}
+  send_on "${AUDIT_AWS_EC2_ATK_SEND_ON}"
+  payload 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk-kill-scripts.return'
+  payload_type "html"
+  endpoint ({
+      :to => '${AUDIT_AWS_EC2_ATK_RECIPIENT}', :subject => 'Untagged EC2 Instances kill script: PLAN::stack_name :: PLAN::name'
+  })
+end
