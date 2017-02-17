@@ -9,7 +9,7 @@ coreo_aws_rule "ec2-get-all-instances-older-than" do
   level "Warning"
   objectives ["instances"]
   audit_objects ["reservation_set.instances_set.launch_time"]
-  operators ["<"]
+  operators [">"]
   raise_when ["5.minutes.ago"]
   id_map "object.reservation_set.instances_set.instance_id"
 end
