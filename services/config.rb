@@ -308,7 +308,7 @@ const CloudCoreoJSRunner = require('cloudcoreo-jsrunner-commons');
 const AuditEC2ATK = new CloudCoreoJSRunner(JSON_INPUT, VARIABLES);
 const notifiers = AuditEC2ATK.getNotifiers();
 const violations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel());
-const inhalations = JSON.stringify(JSON_INPUT['violations'])
+const inhalations = JSON.stringify(AuditEC2ATK.getJSONForAuditPanel().violations)
 coreoExport('violations', inhalations);
 callback(notifiers);
   EOH
@@ -317,7 +317,7 @@ end
 coreo_uni_util_variables "update-rule-runner" do
    action :set
    variables([
-                 {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.inhalations'}
+                 {'COMPOSITE::coreo_aws_rule_runner_ec2.advise-ec2-atk.report' => 'COMPOSITE::coreo_uni_util_jsrunner.tags-to-notifiers-array-ec2-atk.violations'}
              ])
 end
 
